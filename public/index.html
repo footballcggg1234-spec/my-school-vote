@@ -3,335 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPK26 | Visionary Election</title>
+    <title>RPK26 | ระบบเลือกตั้ง</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&family=Prompt:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
         :root {
-            --font-en: 'Inter', sans-serif;
-            --font-th: 'Prompt', sans-serif;
-            
-            /* --- 🌑 DARK THEME (Deep Aurora) --- */
-            --bg-color: #000000;
-            --glass-surface: rgba(20, 20, 25, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            /* --- 🌑 DARK THEME --- */
+            --bg-color: #020617;
+            --glass-surface: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
             --text-secondary: #94a3b8;
-            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
-            --glow-color: rgba(139, 92, 246, 0.5);
+            --glow-color: rgba(99, 102, 241, 0.5);
         }
 
         [data-theme="light"] {
-            /* --- ⚪ LIGHT THEME (Frosted Ceramic) --- */
-            --bg-color: #f8fafc;
-            --glass-surface: rgba(255, 255, 255, 0.65);
+            /* --- ⚪ LIGHT THEME --- */
+            --bg-color: #f0f9ff;
+            --glass-surface: rgba(255, 255, 255, 0.8);
             --glass-border: rgba(0, 0, 0, 0.05);
             --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --accent-gradient: linear-gradient(135deg, #3b82f6, #06b6d4);
-            --glow-color: rgba(14, 165, 233, 0.4);
+            --text-secondary: #475569;
+            --glow-color: rgba(14, 165, 233, 0.3);
         }
 
         body {
-            font-family: var(--font-th);
+            font-family: 'Prompt', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             overflow-x: hidden;
-            transition: background-color 0.8s ease;
+            transition: background-color 0.5s ease;
         }
 
-        /* --- 🌌 FLUID MESH BACKGROUND --- */
+        /* --- BACKGROUND --- */
         .mesh-bg {
-            position: fixed; inset: 0; z-index: -1; opacity: 0.8;
-            background-color: var(--bg-color);
+            position: fixed; inset: 0; z-index: -1;
         }
         .mesh-blob {
-            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5;
             animation: blob-bounce 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .blob-1 { top: -10%; left: -10%; width: 70vw; height: 70vw; background: #4f46e5; animation-delay: 0s; }
-        .blob-2 { bottom: -20%; right: -20%; width: 60vw; height: 60vw; background: #db2777; animation-delay: -5s; animation-direction: reverse; }
-        .blob-3 { top: 40%; left: 30%; width: 50vw; height: 50vw; background: #0891b2; opacity: 0.4; animation-delay: -10s; }
-        
-        [data-theme="light"] .blob-1 { background: #bfdbfe; opacity: 0.8; }
-        [data-theme="light"] .blob-2 { background: #e9d5ff; opacity: 0.8; }
-        [data-theme="light"] .blob-3 { background: #cffafe; opacity: 0.8; }
+        .blob-1 { top: -10%; left: -10%; width: 70vw; height: 70vw; background: #4f46e5; }
+        .blob-2 { bottom: -20%; right: -20%; width: 60vw; height: 60vw; background: #ec4899; animation-direction: reverse; }
+        @keyframes blob-bounce { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, -40px); } }
 
-        @keyframes blob-bounce { 
-            0% { transform: translate(0, 0) scale(1); } 
-            100% { transform: translate(40px, -40px) scale(1.1); } 
-        }
-
-        /* --- 💎 HYPER GLASS CARD --- */
+        /* --- 💎 GLASS CARD (ปกติ) --- */
         .glass-card {
             background: var(--glass-surface);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 32px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
-            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-            position: relative; overflow: hidden; z-index: 1;
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative; overflow: hidden;
         }
-
-        /* Dynamic Spotlight Effect on Hover */
-        .glass-card::before {
-            content: ''; position: absolute; inset: 0; z-index: -1;
-            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);
-            opacity: 0; transition: opacity 0.5s;
-        }
-        .glass-card:hover::before { opacity: 1; }
-
         .glass-card:hover {
-            transform: translateY(-10px) scale(1.01);
-            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.4), 0 0 50px var(--glow-color);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
             border-color: rgba(255,255,255,0.3);
         }
 
+        /* --- ✨ SELECTED STATE (ตอนเลือก - เปลี่ยนสีชัดเจน) --- */
         .glass-card.selected {
-            border: 2px solid #eab308;
-            background: rgba(234, 179, 8, 0.08);
-            box-shadow: 0 0 60px rgba(234, 179, 8, 0.3);
+            background: linear-gradient(145deg, #fbbf24 0%, #d97706 100%) !important; /* สีทองส้ม */
+            border: 3px solid #fffbeb !important;
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.5); /* แสงเรืองรอง */
+            transform: scale(1.05) translateY(-10px);
+            color: white !important;
         }
-        .glass-card.dimmed { opacity: 0.4; filter: grayscale(1); transform: scale(0.96); }
+        /* เปลี่ยนสีตัวหนังสือข้างในตอนเลือก */
+        .glass-card.selected h3, 
+        .glass-card.selected p { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .glass-card.selected .check-btn {
+            background: white; color: #d97706; border: none; font-weight: 900;
+        }
 
-        /* --- ✨ TYPOGRAPHY & DETAILS --- */
-        .font-display { font-family: var(--font-en); letter-spacing: -0.03em; }
-        .text-gradient { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .btn-modern {
-            background: var(--text-primary); color: var(--bg-color);
-            border: none; position: relative; overflow: hidden;
+        .glass-card.dimmed { opacity: 0.4; filter: grayscale(1); transform: scale(0.95); }
+
+        /* --- BUTTONS --- */
+        .btn-main {
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            color: white; border-radius: 99px;
+            box-shadow: 0 10px 30px -5px rgba(234, 88, 12, 0.4);
             transition: transform 0.2s;
         }
-        .btn-modern:hover { transform: scale(1.05); }
-        .btn-modern:active { transform: scale(0.95); }
-
-        /* --- ANIMATIONS --- */
-        .reveal-up { animation: revealUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(40px); }
-        @keyframes revealUp { to { opacity: 1; transform: translateY(0); } }
+        .btn-main:active { transform: scale(0.95); }
 
         .hidden-section { display: none !important; }
+        .animate-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; transform: translateY(30px); }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* Theme Switcher */
-        .theme-toggle {
-            position: fixed; top: 24px; right: 24px; z-index: 100;
-            width: 56px; height: 56px; border-radius: 20px;
-            background: var(--glass-surface); backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; color: var(--text-primary);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        /* IMAGE STYLES */
+        .candidate-img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.5s ease;
         }
-        .theme-toggle:hover { transform: rotate(15deg) scale(1.1); background: var(--glass-border); }
+        .group:hover .candidate-img { transform: scale(1.1); }
 
     </style>
 </head>
-<body onmousemove="handleMouseMove(event)">
+<body>
 
     <div class="mesh-bg">
         <div class="mesh-blob blob-1"></div>
         <div class="mesh-blob blob-2"></div>
-        <div class="mesh-blob blob-3"></div>
     </div>
 
-    <button class="theme-toggle" onclick="toggleTheme()" title="Change Theme">
-        <i id="theme-icon" class="fas fa-moon text-xl"></i>
+    <button onclick="toggleTheme()" class="fixed top-5 right-5 z-50 w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-white/20 transition">
+        <i id="theme-icon" class="fas fa-moon text-white"></i>
     </button>
 
-    <div id="view-landing" class="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 reveal-up">
-        
-        <div class="text-center mb-20 relative">
-            <div class="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl mb-8 shadow-2xl">
-                <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                </span>
-                <span class="text-xs font-display font-bold tracking-[0.2em] uppercase opacity-80" style="color: var(--text-primary);">System Online</span>
-            </div>
-            <h1 class="text-8xl md:text-[10rem] font-display font-black leading-[0.85] mb-2 tracking-tighter mix-blend-overlay opacity-50" style="color: var(--text-primary);">
-                2026
+    <div id="view-landing" class="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 animate-up">
+        <div class="text-center mb-16">
+            <h1 class="text-6xl md:text-8xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-lg">
+                ระบบเลือกตั้ง
             </h1>
-            <h2 class="text-5xl md:text-7xl font-display font-bold text-gradient drop-shadow-2xl">
-                ELECTION
-            </h2>
-            <p class="text-xl font-light mt-6 opacity-60 tracking-widest uppercase">Student Council Voting System</p>
+            <p class="text-2xl font-light opacity-80">สภานักเรียนโรงเรียนประชาราชสงเคราะห์ 26</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
             <button onclick="selectStation(1)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between items-start mb-12">
-                    <span class="text-6xl font-display font-black opacity-10 group-hover:opacity-100 group-hover:text-blue-500 transition duration-500">01</span>
-                    <div class="w-12 h-12 rounded-full border border-current opacity-20 flex items-center justify-center group-hover:bg-blue-500 group-hover:border-transparent group-hover:text-white group-hover:opacity-100 transition"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">01</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
                 </div>
-                <div>
-                    <h3 class="text-3xl font-display font-bold mb-1">Station 01</h3>
-                    <p class="text-sm opacity-50 uppercase tracking-widest">Tap to Enter</p>
-                </div>
+                <h3 class="text-3xl font-bold mb-2">จุดเลือกตั้งที่ 1</h3>
+                <p class="opacity-60">สำหรับนักเรียน ม.ต้น</p>
             </button>
             <button onclick="selectStation(2)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between items-start mb-12">
-                    <span class="text-6xl font-display font-black opacity-10 group-hover:opacity-100 group-hover:text-purple-500 transition duration-500">02</span>
-                    <div class="w-12 h-12 rounded-full border border-current opacity-20 flex items-center justify-center group-hover:bg-purple-500 group-hover:border-transparent group-hover:text-white group-hover:opacity-100 transition"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">02</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
                 </div>
-                <div>
-                    <h3 class="text-3xl font-display font-bold mb-1">Station 02</h3>
-                    <p class="text-sm opacity-50 uppercase tracking-widest">Tap to Enter</p>
-                </div>
+                <h3 class="text-3xl font-bold mb-2">จุดเลือกตั้งที่ 2</h3>
+                <p class="opacity-60">สำหรับนักเรียน ม.ปลาย</p>
             </button>
             <button onclick="selectStation(3)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between items-start mb-12">
-                    <span class="text-6xl font-display font-black opacity-10 group-hover:opacity-100 group-hover:text-cyan-500 transition duration-500">03</span>
-                    <div class="w-12 h-12 rounded-full border border-current opacity-20 flex items-center justify-center group-hover:bg-cyan-500 group-hover:border-transparent group-hover:text-white group-hover:opacity-100 transition"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">03</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
                 </div>
-                <div>
-                    <h3 class="text-3xl font-display font-bold mb-1">Station 03</h3>
-                    <p class="text-sm opacity-50 uppercase tracking-widest">Tap to Enter</p>
-                </div>
+                <h3 class="text-3xl font-bold mb-2">จุดเลือกตั้งที่ 3</h3>
+                <p class="opacity-60">สำหรับคุณครู/บุคลากร</p>
             </button>
         </div>
 
-        <div class="mt-24 flex gap-8 opacity-40 hover:opacity-100 transition duration-500">
-             <button onclick="enterMode('admin')" class="text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-3 hover:scale-105 transition"><i class="fa-solid fa-shield-halved"></i> Admin</button>
-             <button onclick="enterMode('live')" class="text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-3 hover:scale-105 transition"><i class="fa-solid fa-chart-simple"></i> Monitor</button>
+        <div class="mt-16 flex gap-6 opacity-60">
+             <button onclick="enterMode('admin')" class="hover:text-white transition"><i class="fa-solid fa-lock mr-2"></i>ผู้ดูแลระบบ</button>
+             <button onclick="enterMode('live')" class="hover:text-white transition"><i class="fa-solid fa-chart-pie mr-2"></i>จอแสดงผล</button>
         </div>
     </div>
 
     <div id="view-voting" class="hidden-section relative z-10 container mx-auto px-4 min-h-screen flex flex-col pb-48">
         
-        <header class="py-10 flex justify-between items-center reveal-up" style="animation-delay: 0.1s;">
-            <div class="glass-card px-6 py-3 rounded-full flex items-center gap-3 border-none bg-white/5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_15px_#34d399] animate-pulse"></span>
-                <span class="font-display font-bold text-xs tracking-[0.2em] opacity-70">STATION 0<span id="station-badge">?</span></span>
+        <header class="py-8 flex justify-between items-center animate-up">
+            <div class="glass-card px-6 py-2 rounded-full flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="font-bold text-sm opacity-80">จุดเลือกตั้งที่ <span id="station-badge">?</span></span>
             </div>
-            <div class="font-display font-black text-2xl tracking-tighter opacity-20">RPK26</div>
+            <div class="font-bold text-xl opacity-30">RPK26 ELECTION</div>
         </header>
 
-        <div class="text-center mb-16 reveal-up" style="animation-delay: 0.2s;">
-            <h1 class="text-6xl md:text-8xl font-display font-bold mb-4 tracking-tight">Vote for Future</h1>
-            <p class="text-xl opacity-60 font-light">1 เสียงของคุณ เปลี่ยนแปลงโรงเรียนได้</p>
+        <div class="text-center mb-12 animate-up" style="animation-delay: 0.1s;">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 drop-shadow-xl">เลือกตั้งเพื่ออนาคต</h1>
+            <p class="text-xl opacity-70">1 เสียงของคุณ เปลี่ยนแปลงโรงเรียนได้</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto w-full reveal-up" style="animation-delay: 0.3s;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto w-full animate-up" style="animation-delay: 0.2s;">
             
-            <div onclick="selectParty(1)" class="glass-card group cursor-pointer p-3 hover:bg-blue-500/5">
-                <div class="aspect-[3/4] rounded-[1.8rem] bg-gradient-to-b from-blue-500/10 to-transparent relative mb-4 overflow-hidden flex flex-col items-center justify-center group-hover:shadow-2xl transition duration-700">
-                    <span class="absolute top-6 right-6 text-6xl font-display font-black opacity-10 group-hover:text-blue-500 group-hover:opacity-100 transition duration-500">01</span>
-                    <i class="fa-solid fa-user-graduate text-9xl opacity-80 group-hover:scale-110 transition duration-500 drop-shadow-2xl" style="color: var(--text-primary);"></i>
+            <div onclick="selectParty(1)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg26.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">1</div>
                 </div>
-                <div class="px-4 pb-4 text-center">
+                <div class="px-2 pb-4 text-center">
                     <h3 class="text-2xl font-bold mb-1">พรรคภิญโญราช</h3>
-                    <p class="text-sm opacity-50 mb-6">Academic Focus</p>
-                    <button class="w-full py-4 rounded-2xl border border-current/10 bg-white/5 text-sm font-bold group-hover:bg-blue-600 group-hover:border-transparent group-hover:text-white transition check-btn">เลือกเบอร์นี้</button>
+                    <p class="text-sm opacity-60 mb-4">วิชาการล้ำหน้า พัฒนาสู่สากล</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
 
-            <div onclick="selectParty(2)" class="glass-card group cursor-pointer p-3 hover:bg-purple-500/5">
-                <div class="aspect-[3/4] rounded-[1.8rem] bg-gradient-to-b from-purple-500/10 to-transparent relative mb-4 overflow-hidden flex flex-col items-center justify-center group-hover:shadow-2xl transition duration-700">
-                    <span class="absolute top-6 right-6 text-6xl font-display font-black opacity-10 group-hover:text-purple-500 group-hover:opacity-100 transition duration-500">02</span>
-                    <i class="fa-solid fa-user-astronaut text-9xl opacity-80 group-hover:scale-110 transition duration-500 drop-shadow-2xl" style="color: var(--text-primary);"></i>
+            <div onclick="selectParty(2)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg261.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">2</div>
                 </div>
-                <div class="px-4 pb-4 text-center">
+                <div class="px-2 pb-4 text-center">
                     <h3 class="text-2xl font-bold mb-1">พรรคราชรุ่งโรจน์</h3>
-                    <p class="text-sm opacity-50 mb-6">Creative & Unity</p>
-                    <button class="w-full py-4 rounded-2xl border border-current/10 bg-white/5 text-sm font-bold group-hover:bg-purple-600 group-hover:border-transparent group-hover:text-white transition check-btn">เลือกเบอร์นี้</button>
+                    <p class="text-sm opacity-60 mb-4">กิจกรรมเด่น เน้นความสุข</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
 
-            <div onclick="selectParty(3)" class="glass-card group cursor-pointer p-3 hover:bg-cyan-500/5">
-                <div class="aspect-[3/4] rounded-[1.8rem] bg-gradient-to-b from-cyan-500/10 to-transparent relative mb-4 overflow-hidden flex flex-col items-center justify-center group-hover:shadow-2xl transition duration-700">
-                    <span class="absolute top-6 right-6 text-6xl font-display font-black opacity-10 group-hover:text-cyan-500 group-hover:opacity-100 transition duration-500">03</span>
-                    <i class="fa-solid fa-hand-holding-heart text-9xl opacity-80 group-hover:scale-110 transition duration-500 drop-shadow-2xl" style="color: var(--text-primary);"></i>
+            <div onclick="selectParty(3)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg262.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">3</div>
                 </div>
-                <div class="px-4 pb-4 text-center">
+                <div class="px-2 pb-4 text-center">
                     <h3 class="text-2xl font-bold mb-1">พรรคราชภิวัฒน์</h3>
-                    <p class="text-sm opacity-50 mb-6">Transparency</p>
-                    <button class="w-full py-4 rounded-2xl border border-current/10 bg-white/5 text-sm font-bold group-hover:bg-cyan-600 group-hover:border-transparent group-hover:text-white transition check-btn">เลือกเบอร์นี้</button>
+                    <p class="text-sm opacity-60 mb-4">โปร่งใส ตรวจสอบได้</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
 
-            <div onclick="selectParty(0)" class="glass-card group cursor-pointer p-3 border-dashed border-2 border-slate-500/30 bg-transparent hover:bg-slate-500/5 shadow-none">
-                <div class="aspect-[3/4] rounded-[1.8rem] relative mb-4 flex flex-col items-center justify-center">
-                    <i class="fa-solid fa-ban text-8xl opacity-20 group-hover:opacity-100 group-hover:text-slate-400 transition duration-300"></i>
+            <div onclick="selectParty(0)" class="glass-card group cursor-pointer p-3 border-dashed border-2 border-white/20 bg-transparent shadow-none hover:bg-white/5">
+                <div class="aspect-[3/4] rounded-2xl flex flex-col items-center justify-center mb-4 text-white/30 group-hover:text-white transition">
+                    <i class="fa-solid fa-ban text-8xl mb-4"></i>
+                    <span class="text-2xl font-bold">X</span>
                 </div>
-                <div class="px-4 pb-4 text-center">
-                    <h3 class="text-2xl font-bold mb-1 opacity-60">ไม่ประสงค์ลงคะแนน</h3>
-                    <p class="text-sm opacity-40 mb-6">Abstain Vote</p>
-                    <button class="w-full py-4 rounded-2xl border border-current/10 bg-white/5 text-sm font-bold group-hover:bg-slate-600 group-hover:border-transparent group-hover:text-white transition check-btn">ยืนยัน</button>
+                <div class="px-2 pb-4 text-center">
+                    <h3 class="text-xl font-bold opacity-60 mb-1">ไม่ประสงค์ลงคะแนน</h3>
+                    <p class="text-sm opacity-40 mb-4">งดออกเสียง</p>
+                    <button class="w-full py-3 rounded-xl border border-white/10 bg-white/5 font-bold transition check-btn">เลือก</button>
                 </div>
             </div>
 
         </div>
 
-        <div id="submit-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-all duration-500 p-6 md:pb-16 flex justify-center">
-            
-            <div class="w-full max-w-4xl glass-card rounded-full p-3 pl-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl bg-black/60 backdrop-blur-3xl border border-white/10">
-                
-                <div class="flex-1 flex items-center gap-8 w-full md:w-auto">
-                    <div class="w-16 h-16 rounded-[1.2rem] bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-xl shadow-orange-500/30 animate-[bounce_2s_infinite]">
-                        <i class="fa-solid fa-check text-3xl"></i>
+        <div id="submit-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-all duration-500 p-6 md:pb-12 flex justify-center">
+            <div class="w-full max-w-3xl glass-card rounded-full p-2 pl-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl bg-black/80 backdrop-blur-xl border-t border-white/20">
+                <div class="flex-1 flex items-center gap-6 w-full md:w-auto">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg animate-bounce">
+                        <i class="fa-solid fa-check text-2xl"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50 mb-1">Confirm Selection</div>
-                        <div class="text-4xl font-display font-bold leading-none" id="selected-text">-</div>
+                        <div class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">ยืนยันการเลือก</div>
+                        <div class="text-3xl font-bold leading-none text-white" id="selected-text">-</div>
                     </div>
                 </div>
-
-                <button onclick="confirmVote()" class="btn-modern px-16 py-6 rounded-full text-xl font-bold font-display flex items-center justify-center gap-4">
-                    CONFIRM VOTE <i class="fa-solid fa-paper-plane"></i>
+                <button onclick="confirmVote()" class="btn-main px-12 py-4 text-xl font-bold flex items-center gap-3 hover:scale-105 transition">
+                    ยืนยันการลงคะแนน <i class="fa-solid fa-paper-plane"></i>
                 </button>
-
             </div>
         </div>
-
     </div>
 
-    <div id="view-success" class="hidden-section fixed inset-0 z-50 bg-black/80 backdrop-blur-3xl flex flex-col items-center justify-center text-center p-6 reveal-up">
-        <div class="w-64 h-64 relative mb-12">
-            <div class="absolute inset-0 rounded-full border-[1px] border-emerald-500/30 animate-[spin_10s_linear_infinite]"></div>
-            <div class="absolute inset-8 rounded-full border-[1px] border-emerald-500/60 animate-[spin_6s_linear_infinite_reverse]"></div>
-            <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fa-solid fa-check text-9xl text-emerald-400 drop-shadow-[0_0_60px_rgba(52,211,153,0.6)]"></i>
-            </div>
+    <div id="view-success" class="hidden-section fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 animate-up">
+        <div class="w-40 h-40 rounded-full bg-green-500 flex items-center justify-center mb-8 shadow-2xl animate-pulse">
+            <i class="fa-solid fa-check text-7xl text-white"></i>
         </div>
-        <h1 class="text-8xl font-display font-black text-white mb-2 tracking-tighter">SUCCESS</h1>
-        <p class="text-2xl text-emerald-400 font-light tracking-widest uppercase">Vote Recorded</p>
+        <h1 class="text-6xl font-bold text-white mb-2">ขอบคุณครับ</h1>
+        <p class="text-2xl text-green-400 font-light">บันทึกคะแนนเรียบร้อยแล้ว</p>
     </div>
 
-    <div id="view-locked" class="hidden-section fixed inset-0 z-50 bg-black/90 backdrop-blur-3xl flex flex-col items-center justify-center text-center p-6">
-        <div class="w-32 h-32 rounded-[2rem] bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 text-5xl mb-8 animate-pulse shadow-[0_0_50px_rgba(239,68,68,0.2)]">
-            <i class="fa-solid fa-lock"></i>
-        </div>
-        <h1 class="text-5xl font-display font-bold text-white mb-2">SYSTEM LOCKED</h1>
-        <p class="text-xl opacity-50 uppercase tracking-widest">Please wait for administrator</p>
+    <div id="view-locked" class="hidden-section fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6">
+        <i class="fa-solid fa-lock text-6xl text-red-500 mb-6 drop-shadow-lg"></i>
+        <h1 class="text-5xl font-bold text-white mb-2">ปิดระบบชั่วคราว</h1>
+        <p class="text-xl opacity-60">กรุณารอเจ้าหน้าที่เปิดเครื่อง</p>
     </div>
 
     <div id="view-admin" class="hidden-section min-h-screen p-8">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-16">
-                <div>
-                    <h1 class="text-4xl font-display font-bold">Admin Console</h1>
-                    <p class="opacity-50 mt-2">Real-time Data Stream</p>
-                </div>
-                <button onclick="location.reload()" class="opacity-50 hover:opacity-100 uppercase text-xs font-bold tracking-widest border border-current px-6 py-3 rounded-xl transition">Disconnect</button>
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-12">
+                <h1 class="text-3xl font-bold">แผงควบคุม (Admin)</h1>
+                <button onclick="location.reload()" class="opacity-50 hover:opacity-100 border px-4 py-2 rounded-lg">ออกจากระบบ</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" id="admin-station-list"></div>
-            <div class="glass-card p-12">
-                <div class="flex justify-between items-end mb-10 border-b border-current border-opacity-10 pb-8">
-                    <h3 class="text-3xl font-bold">Live Results</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" id="admin-station-list"></div>
+            <div class="glass-card p-10 bg-white/5">
+                <div class="flex justify-between items-end mb-8 border-b border-white/10 pb-6">
+                    <h3 class="text-2xl font-bold">ผลคะแนนสด</h3>
                     <div class="text-right">
-                        <p class="text-xs font-bold opacity-50 uppercase tracking-widest mb-1">Total Votes</p>
-                        <div class="text-7xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500" id="admin-total-votes">0</div>
+                        <p class="text-xs opacity-50 mb-1">ยอดผู้มาใช้สิทธิ์</p>
+                        <div class="text-6xl font-black text-blue-400" id="admin-total-votes">0</div>
                     </div>
                 </div>
-                <div id="admin-results-list" class="space-y-6"></div>
-                <div class="mt-16 text-center">
-                    <button onclick="adminReset()" class="text-red-500/60 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition flex items-center justify-center gap-2 mx-auto">
-                        <i class="fa-solid fa-trash-can"></i> Factory Reset
+                <div id="admin-results-list" class="space-y-4"></div>
+                <div class="mt-12 text-center">
+                    <button onclick="adminReset()" class="text-red-500 opacity-60 hover:opacity-100 text-sm font-bold flex items-center justify-center gap-2 mx-auto">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ล้างฐานข้อมูล (Reset)
                     </button>
                 </div>
             </div>
@@ -339,13 +281,13 @@
     </div>
 
     <div id="view-live" class="hidden-section min-h-screen flex flex-col items-center justify-center text-center p-6">
-        <div class="glass-card px-10 py-4 rounded-full mb-16 flex items-center gap-4">
+        <div class="glass-card px-8 py-3 rounded-full mb-12 flex items-center gap-3">
             <span class="w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
-            <span class="text-sm font-bold tracking-[0.3em] opacity-80">LIVE FEED</span>
+            <span class="font-bold opacity-80">ถ่ายทอดสดคะแนน</span>
         </div>
-        <h1 class="text-6xl font-display font-bold opacity-30 uppercase mb-4 tracking-tighter">Total Votes</h1>
-        <div id="live-total" class="text-[25rem] font-display font-black leading-none drop-shadow-2xl">0</div>
-        <button onclick="location.reload()" class="fixed bottom-10 left-10 opacity-30 hover:opacity-100 transition"><i class="fa-solid fa-arrow-left text-3xl"></i></button>
+        <h1 class="text-6xl font-bold opacity-30 mb-2">ยอดผู้มาใช้สิทธิ์</h1>
+        <div id="live-total" class="text-[20rem] font-black leading-none drop-shadow-2xl">0</div>
+        <button onclick="location.reload()" class="fixed bottom-10 left-10 opacity-30 hover:opacity-100"><i class="fa-solid fa-arrow-left text-3xl"></i></button>
     </div>
 
     <script>
@@ -353,18 +295,7 @@
         let myStationId = null;
         let selectedParty = null;
 
-        function handleMouseMove(e) {
-            const cards = document.querySelectorAll('.glass-card');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
-        }
-
-        // Theme
+        // --- Theme Logic ---
         function initTheme() {
             const saved = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', saved);
@@ -379,10 +310,11 @@
         }
         function updateIcon(t) {
             const icon = document.getElementById('theme-icon');
-            icon.className = t === 'dark' ? 'fas fa-moon text-xl' : 'fas fa-sun text-xl text-yellow-500';
+            icon.className = t === 'dark' ? 'fas fa-moon text-white' : 'fas fa-sun text-yellow-500';
         }
         initTheme();
 
+        // --- Navigation ---
         function selectStation(id) {
             myStationId = id;
             document.getElementById('station-badge').innerText = id;
@@ -396,19 +328,22 @@
             if(mode === 'admin') socket.emit('request_status');
         }
 
+        // --- Socket Events ---
         socket.on('init_data', (data) => { updateAdminUI(data.stations); updateScores(data.candidates, data.totalVotes); if(myStationId) { const s = data.stations.find(x => x.id === myStationId); if(s) setLockScreen(s.isLocked); } });
         socket.on('station_update', (data) => { updateSingleStationBtn(data); if(myStationId && data.id === myStationId) setLockScreen(data.isLocked); });
         socket.on('data_update', (data) => updateScores(data.candidates, data.totalVotes));
-        socket.on('reset_all', () => { alert('System Reset'); location.reload(); });
+        socket.on('reset_all', () => { alert('ระบบถูกรีเซ็ตแล้ว'); location.reload(); });
 
         function setLockScreen(isLocked) { const el = document.getElementById('view-locked'); if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } else { el.classList.add('hidden-section'); } }
         
+        // --- Selection Logic ---
         function selectParty(id) {
             selectedParty = id;
+            // Reset styles
             document.querySelectorAll('.glass-card.group').forEach(c => { 
                 c.classList.remove('selected', 'dimmed'); 
                 const btn = c.querySelector('.check-btn');
-                if(btn) { btn.innerHTML = 'เลือกเบอร์นี้'; btn.classList.add('bg-white/5'); btn.classList.remove('bg-blue-600', 'text-white'); }
+                if(btn) { btn.innerHTML = 'เลือกเบอร์นี้'; }
             });
             
             const cards = document.querySelectorAll('#view-voting .glass-card.group');
@@ -418,7 +353,7 @@
                 t.classList.add('selected'); 
                 cards.forEach(c => { if(c!==t) c.classList.add('dimmed'); });
                 const btn = t.querySelector('.check-btn');
-                if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> เลือกแล้ว'; btn.classList.add('bg-amber-500', 'text-black', 'border-amber-400'); btn.classList.remove('bg-white/5'); }
+                if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> เลือกแล้ว'; }
             }
             document.getElementById('submit-bar').classList.remove('translate-y-full');
             document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
@@ -433,22 +368,23 @@
         
         function confirmVote() {
             if (selectedParty === null) return;
-            if (!confirm('ยืนยันการลงคะแนน?')) return;
+            // if (!confirm('ยืนยันการลงคะแนน?')) return; // ตัด confirm ออกเพื่อให้เร็วขึ้นตามสไตล์ Kiosk
             socket.emit('submit_vote', { candidateId: selectedParty });
             document.getElementById('view-success').classList.remove('hidden-section');
             resetSelection();
             setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); }, 3000);
         }
 
+        // --- Admin & Stats ---
         function updateAdminUI(stations) {
             const list = document.getElementById('admin-station-list');
             if(!list) return;
             list.innerHTML = stations.map(s => `
                 <div onclick="toggleLock(${s.id}, ${s.isLocked})" 
-                    class="glass-card p-8 rounded-[2rem] cursor-pointer text-center flex flex-col items-center justify-center gap-6 ${s.isLocked ? 'opacity-60 grayscale' : ''}">
-                    <div class="text-xs font-bold opacity-50 tracking-[0.2em] uppercase">Terminal 0${s.id}</div>
-                    <div class="text-5xl ${s.isLocked ? 'text-red-500' : 'text-emerald-500'}"><i class="fa-solid ${s.isLocked ? 'fa-lock' : 'fa-unlock'}"></i></div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-current opacity-60">${s.isLocked ? 'LOCKED' : 'ONLINE'}</div>
+                    class="glass-card p-6 cursor-pointer text-center flex flex-col items-center gap-4 ${s.isLocked ? 'opacity-50' : ''}">
+                    <div class="text-sm opacity-50">STATION 0${s.id}</div>
+                    <div class="text-4xl ${s.isLocked ? 'text-red-500' : 'text-green-500'}"><i class="fa-solid ${s.isLocked ? 'fa-lock' : 'fa-unlock'}"></i></div>
+                    <div class="text-xs font-bold border px-2 py-1 rounded opacity-60">${s.isLocked ? 'LOCKED' : 'ONLINE'}</div>
                 </div>
             `).join('');
         }
@@ -456,8 +392,11 @@
         function toggleLock(id, status) { socket.emit(status ? 'admin_unlock_station' : 'admin_lock_station', id); }
         
         function updateScores(cands, total) {
-            document.getElementById('live-total').innerText = total;
-            document.getElementById('admin-total-votes').innerText = total.toLocaleString();
+            const liveTotal = document.getElementById('live-total');
+            if(liveTotal) liveTotal.innerText = total;
+            const adminTotal = document.getElementById('admin-total-votes');
+            if(adminTotal) adminTotal.innerText = total.toLocaleString();
+
             const adminList = document.getElementById('admin-results-list');
             if(adminList) { 
                 const sorted = [...cands].sort((a,b) => b.votes - a.votes); 
@@ -465,21 +404,19 @@
                 adminList.innerHTML = sorted.map(c => {
                     const percent = (c.votes / (max || 1)) * 100;
                     return `
-                    <div class="mb-8">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="font-bold text-xl">${c.name}</span>
-                            <span class="font-display font-bold text-2xl opacity-80">${c.votes}</span>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-lg">${c.name}</span>
+                            <span class="text-xl font-bold">${c.votes}</span>
                         </div>
-                        <div class="w-full bg-current/5 rounded-full h-3 overflow-hidden">
-                            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-1000 opacity-90 relative" style="width: ${percent}%">
-                                <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
-                            </div>
+                        <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full transition-all duration-700" style="width: ${percent}%"></div>
                         </div>
                     </div>`;
                 }).join(''); 
             }
         }
-        function adminReset() { if(confirm('Reset System?')) socket.emit('admin_reset'); }
+        function adminReset() { if(confirm('ยืนยันล้างคะแนนทั้งหมด?')) socket.emit('admin_reset'); }
     </script>
 </body>
 </html>
