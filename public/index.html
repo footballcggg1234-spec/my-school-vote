@@ -30,7 +30,6 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Animations */
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         @keyframes bounce-short { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
@@ -91,7 +90,6 @@
         <div id="submit-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-all duration-500 p-4 md:pb-10 flex justify-center">
             <div class="w-full max-w-5xl theme-bg-glass backdrop-blur-3xl rounded-[2.5rem] p-3 border border-yellow-500/40 shadow-[0_0_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-[2rem] bg-gradient-to-r from-slate-900/50 to-slate-800/50">
-                    
                     <div class="flex items-center gap-6 w-full md:w-auto justify-center md:justify-start">
                         <div class="w-20 h-20 min-w-[5rem] rounded-3xl bg-gradient-to-br from-yellow-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30 text-white animate-[bounce_2s_infinite]">
                             <i class="fas fa-check text-4xl"></i>
@@ -101,15 +99,10 @@
                             <div class="text-4xl md:text-5xl font-black text-white drop-shadow-md whitespace-nowrap" id="selected-text">-</div>
                         </div>
                     </div>
-
                     <button onclick="confirmVote()" class="relative group overflow-hidden w-full md:w-auto bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-black text-3xl md:text-4xl py-6 px-16 rounded-2xl shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/80 hover:scale-[1.02] active:scale-95 transition-all duration-300 border-t border-white/20">
                         <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></span>
-                        <div class="relative flex items-center justify-center gap-4">
-                            <span>ยืนยัน</span>
-                            <i class="fas fa-paper-plane text-3xl md:text-4xl group-hover:-rotate-12 transition-transform"></i>
-                        </div>
+                        <div class="relative flex items-center justify-center gap-4"><span>ยืนยัน</span><i class="fas fa-paper-plane text-3xl md:text-4xl group-hover:-rotate-12 transition-transform"></i></div>
                     </button>
-
                 </div>
             </div>
         </div>
@@ -117,24 +110,37 @@
 
     <div id="view-success" class="hidden-section fixed inset-0 z-[100] theme-bg-glass flex flex-col items-center justify-center text-center p-6 animate-fade-in">
         <div class="w-40 h-40 rounded-full bg-green-500 flex items-center justify-center mb-8 shadow-2xl shadow-green-500/50 animate-bounce"><i class="fas fa-check text-7xl text-white"></i></div>
-        <h1 class="text-6xl font-bold mb-4 text-green-500">ขอบคุณครับ</h1>
-        <p class="text-2xl opacity-80">บันทึกคะแนนเรียบร้อยแล้ว</p>
-        <p class="mt-8 text-lg opacity-50">กลับหน้าหลักใน 3 วินาที...</p>
+        <h1 class="text-6xl font-bold mb-4 text-green-500">ขอบคุณครับ</h1><p class="text-2xl opacity-80">บันทึกคะแนนเรียบร้อยแล้ว</p><p class="mt-8 text-lg opacity-50">กลับหน้าหลักใน 3 วินาที...</p>
     </div>
 
     <div id="view-locked" class="hidden-section fixed inset-0 z-[100] theme-bg-glass flex flex-col items-center justify-center text-center p-6">
         <div class="w-32 h-32 rounded-full bg-red-500/20 flex items-center justify-center mb-6 animate-pulse"><i class="fas fa-lock text-6xl text-red-500"></i></div>
-        <h1 class="text-4xl font-bold mb-4">พักการลงคะแนน</h1>
-        <p class="text-xl theme-text-sub">ระบบถูกล็อกโดยเจ้าหน้าที่</p>
+        <h1 class="text-4xl font-bold mb-4">พักการลงคะแนน</h1><p class="text-xl theme-text-sub">ระบบถูกล็อกโดยเจ้าหน้าที่</p>
     </div>
 
     <div id="view-admin" class="hidden-section min-h-screen p-8">
         <div class="max-w-5xl mx-auto">
             <div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold">Admin Console</h1><button onclick="location.reload()" class="theme-text-sub hover:text-red-500"><i class="fas fa-power-off mr-2"></i> Exit</button></div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="admin-station-list"></div>
-            <div class="mt-8 theme-card p-6 rounded-xl"><h3 class="font-bold mb-4">Live Results (Secret)</h3><div id="admin-results-list" class="space-y-2"></div><div class="border-t border-slate-700 mt-6 pt-4"><button onclick="adminReset()" class="text-red-500 text-sm underline hover:text-red-600">⚠️ Reset System</button></div></div>
+            
+            <div class="mt-8 theme-card p-6 rounded-xl relative overflow-hidden">
+                <div class="flex justify-between items-end mb-6 border-b border-slate-500/20 pb-4">
+                    <div>
+                        <h3 class="text-2xl font-bold">Live Results (Secret)</h3>
+                        <p class="theme-text-sub text-sm">ผลคะแนนสด (ลับ)</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold uppercase tracking-widest theme-text-sub mb-1">Total Votes</p>
+                        <div class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500" id="admin-total-votes">0</div>
+                    </div>
+                </div>
+
+                <div id="admin-results-list" class="space-y-2"></div>
+                <div class="border-t border-slate-500/20 mt-6 pt-4"><button onclick="adminReset()" class="text-red-500 text-sm underline hover:text-red-600">⚠️ Reset System</button></div>
+            </div>
         </div>
     </div>
+
     <div id="view-live" class="hidden-section min-h-screen flex flex-col items-center justify-center text-center">
         <h1 class="text-4xl font-bold mb-4 tracking-widest uppercase opacity-50">Live Turnout</h1>
         <div id="live-total" class="text-[12rem] font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-pink-500 leading-none">0</div>
@@ -171,10 +177,9 @@
         socket.on('reset_all', () => { alert('System Reset'); location.reload(); });
 
         function setLockScreen(isLocked) { const el = document.getElementById('view-locked'); if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } else { el.classList.add('hidden-section'); } }
-        
         function selectParty(id) {
             selectedParty = id;
-            document.querySelectorAll('.party-card').forEach(c => { c.classList.remove('selected'); c.classList.add('dimmed'); const b = c.querySelector('.check-btn'); b.innerHTML = 'เลือกเบอร์นี้'; b.className = 'w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn'; });
+            document.querySelectorAll('.party-card').forEach(c => { c.classList.remove('selected', 'dimmed'); const b = c.querySelector('.check-btn'); b.innerHTML = 'เลือกเบอร์นี้'; b.className = 'w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn'; });
             const cards = document.querySelectorAll('.party-card');
             let t = (id === 0) ? cards[3] : cards[id-1];
             if(t) { t.classList.add('selected'); t.classList.remove('dimmed'); const b = t.querySelector('.check-btn'); b.innerHTML = 'เลือกแล้ว'; b.className = 'w-full py-3 rounded-xl bg-yellow-500 text-black font-bold transition check-btn shadow-lg scale-105'; }
@@ -182,7 +187,6 @@
             document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
         }
         function resetSelection() { selectedParty = null; document.querySelectorAll('.party-card').forEach(c => { c.classList.remove('selected', 'dimmed'); c.querySelector('.check-btn').innerHTML = 'เลือกเบอร์นี้'; }); document.getElementById('submit-bar').classList.add('translate-y-full'); }
-        
         function confirmVote() {
             if (selectedParty === null) return;
             if (!confirm('ยืนยันการลงคะแนน?')) return;
@@ -206,10 +210,25 @@
         }
         function updateSingleStationBtn(data) { socket.emit('request_status'); }
         function toggleLock(id, status) { socket.emit(status ? 'admin_unlock_station' : 'admin_lock_station', id); }
+        
         function updateScores(cands, total) {
-            document.getElementById('live-total').innerText = total;
-            const list = document.getElementById('admin-results-list');
-            if(list) { const sorted = [...cands].sort((a,b) => b.votes - a.votes); list.innerHTML = sorted.map(c => `<div class="flex justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-lg mb-2"><span class="theme-text-main">${c.name}</span><span class="font-bold text-blue-500">${c.votes}</span></div>`).join(''); }
+            // Live Monitor Page
+            const liveTotal = document.getElementById('live-total');
+            if(liveTotal) liveTotal.innerText = total;
+
+            // Admin Page
+            const adminTotal = document.getElementById('admin-total-votes');
+            if(adminTotal) adminTotal.innerText = total.toLocaleString();
+
+            const adminList = document.getElementById('admin-results-list');
+            if(adminList) { 
+                const sorted = [...cands].sort((a,b) => b.votes - a.votes); 
+                adminList.innerHTML = sorted.map(c => `
+                    <div class="flex justify-between p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg mb-2 items-center">
+                        <span class="theme-text-main font-bold text-lg">${c.name}</span>
+                        <span class="font-black text-2xl text-blue-500">${c.votes}</span>
+                    </div>`).join(''); 
+            }
         }
         function adminReset() { if(confirm('Reset System?')) socket.emit('admin_reset'); }
     </script>
