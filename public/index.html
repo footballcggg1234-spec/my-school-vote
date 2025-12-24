@@ -10,105 +10,106 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        /* THEME VARIABLES */
-        :root {
-            --bg-core: #0f172a; --bg-card: #1e293b; --text-main: #ffffff; --text-sub: #94a3b8; --border-color: #334155;
-        }
-        [data-theme="light"] {
-            --bg-core: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-sub: #64748b; --border-color: #e2e8f0;
-        }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg-core); color: var(--text-main); transition: all 0.5s ease; overflow-x: hidden; }
-        .theme-card { background-color: var(--bg-card); border: 1px solid var(--border-color); transition: all 0.3s; }
-        .theme-bg-glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border: 1px solid var(--border-color); }
-        [data-theme="light"] .theme-bg-glass { background: rgba(255, 255, 255, 0.9); border-color: white; }
-        
-        .party-card:hover { transform: translateY(-5px); border-color: #6366f1; }
-        .party-card.selected { border: 4px solid #f59e0b; transform: scale(1.02); }
+        :root { --bg-core: #0f172a; --bg-card: #1e293b; --text-main: #ffffff; --text-sub: #94a3b8; --border-color: #334155; --grid-color: #334155; }
+        [data-theme="light"] { --bg-core: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-sub: #64748b; --border-color: #e2e8f0; --grid-color: #cbd5e1; }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg-core); color: var(--text-main); overflow-x: hidden; transition: all 0.5s ease; }
+        .theme-card { background-color: var(--bg-card); border: 1px solid var(--border-color); transition: all 0.4s; }
+        .theme-text-sub { color: var(--text-sub); }
+        .theme-bg-glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid var(--border-color); }
+        [data-theme="light"] .theme-bg-glass { background: rgba(255, 255, 255, 0.8); border-color: white; }
+        .party-card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border-color: #6366f1; }
+        .party-card.selected { border: 4px solid #f59e0b; transform: scale(1.02); box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
         .party-card.dimmed { opacity: 0.4; filter: grayscale(0.8); }
+        .bg-grid { background-image: radial-gradient(var(--grid-color) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.15; }
         .hidden-section { display: none !important; }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s; }
+        .theme-toggle:hover { transform: rotate(15deg) scale(1.1); }
     </style>
 </head>
 <body class="min-h-screen relative">
 
-    <button class="fixed top-5 right-5 z-[200] w-12 h-12 rounded-full theme-card flex items-center justify-center shadow-lg" onclick="toggleTheme()">
-        <i id="theme-icon" class="fas fa-moon text-xl"></i>
-    </button>
+    <button class="theme-toggle" onclick="toggleTheme()" title="สลับโหมด"><i id="theme-icon" class="fas fa-moon text-xl"></i></button>
+    <div class="fixed inset-0 bg-grid z-0 pointer-events-none"></div>
+    <div class="fixed top-0 left-0 w-full h-1/2 bg-gradient-to-b from-indigo-500/10 to-transparent z-0"></div>
 
     <div id="view-landing" class="relative z-50 flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
-        <h1 class="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">ตั้งค่าจุดลงคะแนน</h1>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-            <button onclick="selectStation(1)" class="theme-card p-8 rounded-2xl hover:bg-blue-500/10"><div class="text-3xl font-bold mb-2">Station 1</div></button>
-            <button onclick="selectStation(2)" class="theme-card p-8 rounded-2xl hover:bg-blue-500/10"><div class="text-3xl font-bold mb-2">Station 2</div></button>
-            <button onclick="selectStation(3)" class="theme-card p-8 rounded-2xl hover:bg-blue-500/10"><div class="text-3xl font-bold mb-2">Station 3</div></button>
+        <div class="text-center mb-10">
+            <h1 class="text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 pb-2">ตั้งค่าเครื่องลงคะแนน</h1>
+            <p class="theme-text-sub text-xl">กรุณาระบุหมายเลขเครื่องคอมพิวเตอร์นี้</p>
         </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+            <button onclick="selectStation(1)" class="theme-card p-8 rounded-2xl hover:bg-blue-500/5 transition group">
+                <div class="text-4xl font-bold mb-2 group-hover:text-blue-500">Station 1</div>
+                <div class="theme-text-sub text-sm">สำหรับจุดเลือกตั้งที่ 1</div>
+            </button>
+            <button onclick="selectStation(2)" class="theme-card p-8 rounded-2xl hover:bg-blue-500/5 transition group">
+                <div class="text-4xl font-bold mb-2 group-hover:text-blue-500">Station 2</div>
+                <div class="theme-text-sub text-sm">สำหรับจุดเลือกตั้งที่ 2</div>
+            </button>
+        </div>
+
         <div class="mt-12 flex gap-4">
-             <button onclick="enterMode('admin')" class="px-6 py-2 rounded-full border border-slate-500/30 text-sm">Admin</button>
-             <button onclick="enterMode('live')" class="px-6 py-2 rounded-full border border-slate-500/30 text-sm">Live Monitor</button>
+             <button onclick="enterMode('admin')" class="px-6 py-2 rounded-full border border-slate-500/30 hover:bg-slate-500/10 text-sm theme-text-sub">เข้าสู่ระบบ Admin</button>
+             <button onclick="enterMode('live')" class="px-6 py-2 rounded-full border border-slate-500/30 hover:bg-slate-500/10 text-sm theme-text-sub">จอแสดงผลรวม (Live)</button>
         </div>
     </div>
 
     <div id="view-voting" class="hidden-section relative z-10 container mx-auto px-4 mt-4 text-center pb-32">
-        <div class="absolute top-0 left-4 theme-card px-4 py-2 rounded-full text-xs font-bold border-none shadow-sm flex items-center gap-2">
+        <div class="absolute top-0 left-4 theme-card px-4 py-2 rounded-full text-xs font-bold theme-text-sub border-none shadow-sm flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> STATION #<span id="station-badge">?</span>
         </div>
-        <div class="pt-10 mb-10">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500">เลือกตั้งประธาน</h1>
-            <p class="opacity-60 text-lg">1 สิทธิ์ 1 เสียง ร่วมกำหนดอนาคต</p>
+        <div id="header-text" class="pt-10">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 leading-tight pb-2">เลือกคนที่ใช่<br>เพื่อโรงเรียนของเรา</h1>
+            <p class="theme-text-sub mb-10 text-lg">1 สิทธิ์ 1 เสียง ร่วมกำหนดอนาคต RPK26</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto transition-all duration-500">
             <div class="party-card theme-card rounded-[32px] overflow-hidden cursor-pointer group relative flex flex-col" onclick="selectParty(1)">
-                <div class="h-40 bg-gradient-to-br from-red-500 to-rose-700 flex items-center justify-center text-8xl font-black text-white/20">01</div>
-                <div class="p-6"><h2 class="text-2xl font-bold text-red-500 mb-2">พรรคเรียนดี</h2><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-red-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
+                <div class="h-40 bg-gradient-to-br from-red-500 to-rose-700 flex items-center justify-center text-white/20 font-black text-8xl">01</div>
+                <div class="p-6 flex-1 flex flex-col"><h2 class="text-2xl font-bold mb-1">เบอร์ 1</h2><p class="text-red-500 font-bold mb-2">พรรคเรียนดี</p><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-red-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
             </div>
             <div class="party-card theme-card rounded-[32px] overflow-hidden cursor-pointer group relative flex flex-col" onclick="selectParty(2)">
-                <div class="h-40 bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-8xl font-black text-white/20">02</div>
-                <div class="p-6"><h2 class="text-2xl font-bold text-blue-500 mb-2">พรรคกิจกรรม</h2><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
+                <div class="h-40 bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-white/20 font-black text-8xl">02</div>
+                <div class="p-6 flex-1 flex flex-col"><h2 class="text-2xl font-bold mb-1">เบอร์ 2</h2><p class="text-blue-500 font-bold mb-2">พรรคกิจกรรม</p><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
             </div>
             <div class="party-card theme-card rounded-[32px] overflow-hidden cursor-pointer group relative flex flex-col" onclick="selectParty(3)">
-                <div class="h-40 bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center text-8xl font-black text-white/20">03</div>
-                <div class="p-6"><h2 class="text-2xl font-bold text-emerald-500 mb-2">พรรคสามัคคี</h2><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-emerald-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
+                <div class="h-40 bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center text-white/20 font-black text-8xl">03</div>
+                <div class="p-6 flex-1 flex flex-col"><h2 class="text-2xl font-bold mb-1">เบอร์ 3</h2><p class="text-emerald-500 font-bold mb-2">พรรคสามัคคี</p><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-emerald-600 group-hover:text-white transition check-btn">เลือกเบอร์นี้</div></div>
             </div>
-            <div class="party-card theme-card rounded-[32px] overflow-hidden cursor-pointer group relative flex flex-col" onclick="selectParty(0)">
-                <div class="h-40 bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-6xl text-slate-500"><i class="fas fa-ban"></i></div>
-                <div class="p-6"><h2 class="text-xl font-bold opacity-70 mb-2">ไม่ประสงค์ลงคะแนน</h2><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-slate-500 group-hover:text-white transition check-btn">เลือก</div></div>
+             <div class="party-card theme-card rounded-[32px] overflow-hidden cursor-pointer group relative flex flex-col" onclick="selectParty(0)">
+                <div class="h-40 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 text-6xl"><i class="fas fa-ban"></i></div>
+                <div class="p-6 flex-1 flex flex-col justify-center"><h2 class="text-xl font-bold mb-1 theme-text-sub">ไม่ประสงค์ลงคะแนน</h2><p class="theme-text-sub text-sm mb-4 opacity-70">งดออกเสียง</p><div class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-slate-500 group-hover:text-white transition check-btn">เลือก</div></div>
             </div>
         </div>
 
-        <div class="fixed bottom-0 left-0 w-full p-4 theme-bg-glass transform translate-y-full transition duration-300 z-50 flex justify-center items-center gap-6" id="submit-bar">
+        <div class="fixed bottom-0 left-0 w-full p-4 theme-bg-glass transform translate-y-full transition duration-300 z-50 flex flex-col md:flex-row justify-center items-center gap-6" id="submit-bar">
             <div class="font-bold text-lg">คุณเลือก: <span class="text-yellow-500 text-2xl ml-2" id="selected-text">-</span></div>
-            <button onclick="confirmVote()" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:shadow-orange-500/40 active:scale-95 transition">ยืนยันการลงคะแนน</button>
+            <button onclick="confirmVote()" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:shadow-orange-500/40 active:scale-95 transition w-full md:w-auto text-lg flex items-center justify-center gap-2"><i class="fas fa-vote-yea"></i> ยืนยันการลงคะแนน</button>
         </div>
     </div>
 
     <div id="view-success" class="hidden-section fixed inset-0 z-[100] theme-bg-glass flex flex-col items-center justify-center text-center p-6 animate-fade-in">
-        <div class="w-32 h-32 rounded-full bg-green-500 flex items-center justify-center mb-6 shadow-2xl shadow-green-500/50 animate-bounce">
-            <i class="fas fa-check text-6xl text-white"></i>
-        </div>
-        <h1 class="text-5xl font-bold mb-4 text-green-500">ขอบคุณครับ</h1>
-        <p class="text-xl opacity-80">บันทึกคะแนนเรียบร้อยแล้ว</p>
-        <p class="mt-8 text-sm opacity-50">กำลังกลับสู่หน้าหลักใน 3 วินาที...</p>
+        <div class="w-32 h-32 rounded-full bg-green-500 flex items-center justify-center mb-6 shadow-2xl shadow-green-500/50 animate-bounce"><i class="fas fa-check text-6xl text-white"></i></div>
+        <h1 class="text-5xl font-bold mb-4 text-green-500">ขอบคุณครับ</h1><p class="text-xl opacity-80">บันทึกคะแนนเรียบร้อยแล้ว</p><p class="mt-8 text-sm opacity-50">กำลังกลับสู่หน้าหลักใน 3 วินาที...</p>
     </div>
-
     <div id="view-locked" class="hidden-section fixed inset-0 z-[100] theme-bg-glass flex flex-col items-center justify-center text-center p-6">
-        <i class="fas fa-lock text-6xl text-red-500 mb-6"></i>
-        <h1 class="text-4xl font-bold mb-4">พักการลงคะแนน</h1>
-        <p class="opacity-70">กรุณารอเจ้าหน้าที่</p>
+        <i class="fas fa-lock text-6xl text-red-500 mb-6"></i><h1 class="text-4xl font-bold mb-4">พักการลงคะแนน</h1><p class="opacity-70">กรุณารอเจ้าหน้าที่</p>
     </div>
 
     <div id="view-admin" class="hidden-section min-h-screen p-8">
         <div class="max-w-5xl mx-auto">
-            <div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold">Admin Console</h1><button onclick="location.reload()" class="opacity-70 hover:text-red-500">Exit</button></div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="admin-station-list"></div>
-            <div class="mt-8 theme-card p-6 rounded-xl"><h3 class="font-bold mb-4">Live Results</h3><div id="admin-results-list" class="space-y-2"></div><div class="border-t border-slate-700 mt-6 pt-4"><button onclick="adminReset()" class="text-red-500 text-sm underline">Reset System</button></div></div>
+            <div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold">Admin Console</h1><button onclick="location.reload()" class="theme-text-sub hover:text-red-500"><i class="fas fa-power-off mr-2"></i> Exit</button></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="admin-station-list"></div> <div class="mt-8 theme-card p-6 rounded-xl"><h3 class="font-bold mb-4">Live Results (Secret)</h3><div id="admin-results-list" class="space-y-2"></div><div class="border-t border-slate-700 mt-6 pt-4"><button onclick="adminReset()" class="text-red-500 text-sm underline hover:text-red-600">⚠️ Reset System</button></div></div>
         </div>
     </div>
     <div id="view-live" class="hidden-section min-h-screen flex flex-col items-center justify-center text-center">
-        <h1 class="text-4xl font-bold mb-4 opacity-50">Live Turnout</h1>
+        <h1 class="text-4xl font-bold mb-4 tracking-widest uppercase opacity-50">Live Turnout</h1>
         <div id="live-total" class="text-[12rem] font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-pink-500 leading-none">0</div>
-        <button onclick="location.reload()" class="mt-12 opacity-50 hover:opacity-100">กลับ</button>
+        <p class="theme-text-sub text-xl mt-4">Total Votes</p>
+        <button onclick="location.reload()" class="mt-12 theme-text-sub opacity-50 hover:opacity-100"><i class="fas fa-arrow-left"></i> กลับ</button>
     </div>
 
     <script>
@@ -116,13 +117,11 @@
         let myStationId = null;
         let selectedParty = null;
 
-        // Theme
         function initTheme() { const t = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', t); updateThemeIcon(t); }
         function toggleTheme() { const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); updateThemeIcon(n); }
         function updateThemeIcon(t) { document.getElementById('theme-icon').className = t === 'dark' ? 'fas fa-moon text-xl' : 'fas fa-sun text-yellow-500 text-xl'; }
         initTheme();
 
-        // Nav
         function selectStation(id) {
             myStationId = id;
             document.getElementById('station-badge').innerText = id;
@@ -136,112 +135,50 @@
             if(mode === 'admin') socket.emit('request_status');
         }
 
-        // Socket
-        socket.on('init_data', (data) => {
-            updateAdminUI(data.stations);
-            updateScores(data.candidates, data.totalVotes);
-            if (myStationId) {
-                const myState = data.stations.find(s => s.id === myStationId);
-                // ถ้าแอดมินสั่งล็อก manual ให้แสดงหน้าล็อก
-                setLockScreen(myState.isLocked);
-            }
-        });
-        socket.on('station_update', (data) => {
-            updateSingleStationBtn(data);
-            if (myStationId && data.id === myStationId) setLockScreen(data.isLocked);
-        });
+        socket.on('init_data', (data) => { updateAdminUI(data.stations); updateScores(data.candidates, data.totalVotes); if(myStationId) { const s = data.stations.find(x => x.id === myStationId); if(s) setLockScreen(s.isLocked); } });
+        socket.on('station_update', (data) => { updateSingleStationBtn(data); if(myStationId && data.id === myStationId) setLockScreen(data.isLocked); });
         socket.on('data_update', (data) => updateScores(data.candidates, data.totalVotes));
         socket.on('reset_all', () => { alert('System Reset'); location.reload(); });
 
-        // Logic
-        function setLockScreen(isLocked) {
-            const lockView = document.getElementById('view-locked');
-            if (isLocked) {
-                lockView.classList.remove('hidden-section');
-                resetSelection();
-            } else {
-                lockView.classList.add('hidden-section');
-            }
-        }
-
+        function setLockScreen(isLocked) { const el = document.getElementById('view-locked'); if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } else { el.classList.add('hidden-section'); } }
         function selectParty(id) {
             selectedParty = id;
-            document.querySelectorAll('.party-card').forEach(c => {
-                c.classList.remove('selected'); c.classList.add('dimmed');
-                c.querySelector('.check-btn').innerHTML = 'เลือกเบอร์นี้';
-                c.querySelector('.check-btn').classList.remove('bg-yellow-500', 'text-black');
-            });
-            
-            // Highlight
+            document.querySelectorAll('.party-card').forEach(c => { c.classList.remove('selected'); c.classList.add('dimmed'); const b = c.querySelector('.check-btn'); b.innerHTML = 'เลือกเบอร์นี้'; b.className = 'w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn'; });
             const cards = document.querySelectorAll('.party-card');
-            let target = (id === 0) ? cards[3] : cards[id-1];
-            
-            if(target) {
-                target.classList.add('selected'); target.classList.remove('dimmed');
-                target.querySelector('.check-btn').innerHTML = 'เลือกแล้ว';
-                target.querySelector('.check-btn').classList.add('bg-yellow-500', 'text-black');
-            }
-            const bar = document.getElementById('submit-bar');
-            bar.classList.remove('translate-y-full');
-            document.getElementById('selected-text').innerText = (id === 0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
+            let t = (id === 0) ? cards[3] : cards[id-1];
+            if(t) { t.classList.add('selected'); t.classList.remove('dimmed'); const b = t.querySelector('.check-btn'); b.innerHTML = 'เลือกแล้ว'; b.className = 'w-full py-3 rounded-xl bg-yellow-500 text-black font-bold transition check-btn shadow-lg scale-105'; }
+            document.getElementById('submit-bar').classList.remove('translate-y-full');
+            document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
         }
-
-        function resetSelection() {
-            selectedParty = null;
-            document.querySelectorAll('.party-card').forEach(c => {
-                c.classList.remove('selected', 'dimmed');
-                c.querySelector('.check-btn').innerHTML = 'เลือกเบอร์นี้';
-                c.querySelector('.check-btn').classList.remove('bg-yellow-500', 'text-black');
-            });
-            document.getElementById('submit-bar').classList.add('translate-y-full');
-        }
-
+        function resetSelection() { selectedParty = null; document.querySelectorAll('.party-card').forEach(c => { c.classList.remove('selected', 'dimmed'); c.querySelector('.check-btn').innerHTML = 'เลือกเบอร์นี้'; }); document.getElementById('submit-bar').classList.add('translate-y-full'); }
         function confirmVote() {
             if (selectedParty === null) return;
             if (!confirm('ยืนยันการลงคะแนน?')) return;
-            
-            socket.emit('submit_vote', { candidateId: selectedParty, stationId: myStationId });
-            
-            // Show Success Screen
-            const successView = document.getElementById('view-success');
-            successView.classList.remove('hidden-section');
+            socket.emit('submit_vote', { candidateId: selectedParty });
+            document.getElementById('view-success').classList.remove('hidden-section');
             resetSelection();
-
-            // กลับหน้าโหวตใน 3 วิ
-            setTimeout(() => {
-                successView.classList.add('hidden-section');
-            }, 3000);
+            setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); }, 3000);
         }
 
-        // Admin
         function updateAdminUI(stations) {
             const list = document.getElementById('admin-station-list');
             if(!list) return;
+            // กรองเอาเฉพาะที่มีใน DB (ซึ่งตอนนี้มีแค่ 1,2)
             list.innerHTML = stations.map(s => `
                 <div id="btn-station-${s.id}" onclick="toggleLock(${s.id}, ${s.isLocked})" 
-                    class="theme-card p-4 rounded-xl cursor-pointer text-center border-2 transition-all ${s.isLocked ? 'border-red-500/50 text-red-500' : 'border-green-500/50 text-green-600'}">
+                    class="theme-card p-4 rounded-xl cursor-pointer text-center border-2 transition-all ${s.isLocked ? 'border-red-500/50 text-red-500 hover:bg-red-500/10' : 'border-green-500/50 text-green-600 hover:bg-green-500/10'}">
                     <div class="font-bold text-sm opacity-70">STATION ${s.id}</div>
                     <div class="text-3xl my-2">${s.isLocked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-unlock"></i>'}</div>
                     <div class="text-xs font-bold">${s.isLocked ? 'PAUSED' : 'ONLINE'}</div>
                 </div>
             `).join('');
         }
-        function updateSingleStationBtn(data) {
-            // Update UI แบบง่ายๆ คือ re-render ทั้งหมดหรือแก้ DOM เฉพาะจุด (ในที่นี้ข้ามเพื่อความสั้น)
-             updateAdminUI([{id: data.id, isLocked: data.isLocked}]); // *Note: This is simplified, real app should update properly
-             // *Fix: better to request full status or handle DOM update. But simplified logic relies on init_data refresh if needed.
-             // For now, let's just let Admin know status changed via alert or color change if implemented fully.
-        }
+        function updateSingleStationBtn(data) { /* (ใช้ updateAdminUI วาดใหม่แทนเพื่อความง่าย) */ socket.emit('request_status'); }
         function toggleLock(id, status) { socket.emit(status ? 'admin_unlock_station' : 'admin_lock_station', id); }
-
-        function updateScores(candidates, total) {
-            const liveTotal = document.getElementById('live-total');
-            if(liveTotal) liveTotal.innerText = total;
-            const adminList = document.getElementById('admin-results-list');
-            if(adminList) {
-                const sorted = [...candidates].sort((a,b) => b.votes - a.votes);
-                adminList.innerHTML = sorted.map(c => `<div class="flex justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-lg mb-2"><span>${c.name}</span><span class="font-bold text-blue-500">${c.votes}</span></div>`).join('');
-            }
+        function updateScores(cands, total) {
+            document.getElementById('live-total').innerText = total;
+            const list = document.getElementById('admin-results-list');
+            if(list) { const sorted = [...cands].sort((a,b) => b.votes - a.votes); list.innerHTML = sorted.map(c => `<div class="flex justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-lg mb-2"><span class="theme-text-main">${c.name}</span><span class="font-bold text-blue-500">${c.votes}</span></div>`).join(''); }
         }
         function adminReset() { if(confirm('Reset System?')) socket.emit('admin_reset'); }
     </script>
