@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPK26 Election | เลือกตั้งสภานักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #0f172a; overflow-x: hidden; }
+        .party-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .party-card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); border-color: rgba(255,255,255,0.3); }
+        .party-card.selected { border: 4px solid #f59e0b; transform: scale(1.02); box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
+        .bg-grid { background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 30px 30px; opacity: 0.1; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(2); opacity: 0; } }
+    </style>
+</head>
+<body class="min-h-screen relative text-white pb-24">
+
+    <div class="fixed inset-0 bg-grid z-0 pointer-events-none"></div>
+    <div class="fixed top-0 left-0 w-full h-1/2 bg-gradient-to-b from-indigo-900/40 to-transparent z-0"></div>
+
+    <div class="relative z-10 container mx-auto px-4 mt-4 text-center">
+        
+        <div id="header-text">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 leading-tight">
+                เลือกคนที่ใช่<br>เพื่อโรงเรียนของเรา
+            </h1>
+            <p class="text-slate-400 mb-10 text-lg">1 สิทธิ์ 1 เสียง ร่วมกำหนดอนาคต RPK26</p>
+
+            <div class="inline-flex items-center gap-4 bg-slate-800/60 backdrop-blur-md border border-slate-700 px-6 py-3 rounded-full mb-12 shadow-2xl">
+                <div class="flex items-center gap-2 relative">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-20 animate-[pulse-ring_2s_infinite]"></span>
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span class="text-slate-300 font-bold text-sm">ผู้ใช้สิทธิ์แล้ว:</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="live-counter" class="text-3xl font-black text-white tabular-nums tracking-tight">0</span>
+                    <span class="text-slate-500 text-xs font-bold uppercase">คน</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="voting-area" class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto transition-all duration-500">
+            
+            <div class="party-card bg-slate-800 rounded-[32px] overflow-hidden border border-slate-700 cursor-pointer group relative flex flex-col" onclick="selectParty(1)">
+                <div class="h-48 bg-gradient-to-br from-red-600 to-rose-800 flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+                    <span class="text-[10rem] font-black text-white/10 absolute -right-8 -bottom-10 group-hover:scale-110 transition duration-500">01</span>
+                    <div class="w-32 h-32 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden relative z-10">
+                        <img src="https://ui-avatars.com/api/?name=Party+1&background=random" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h2 class="text-3xl font-bold mb-1">เบอร์ 1</h2>
+                    <p class="text-red-400 font-bold text-lg mb-4">พรรคพลังราชประชา</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">"สร้างสรรค์ พัฒนา ก้าวหน้าอย่างยั่งยืน เน้นกิจกรรม สร้างความสามัคคี"</p>
+                    <div class="w-full py-4 rounded-xl bg-slate-700 text-slate-300 font-bold group-hover:bg-red-600 group-hover:text-white transition check-btn shadow-lg">
+                        เลือกเบอร์นี้
+                    </div>
+                </div>
+            </div>
+
+            <div class="party-card bg-slate-800 rounded-[32px] overflow-hidden border border-slate-700 cursor-pointer group relative flex flex-col" onclick="selectParty(2)">
+                <div class="h-48 bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+                    <span class="text-[10rem] font-black text-white/10 absolute -right-8 -bottom-10 group-hover:scale-110 transition duration-500">02</span>
+                    <div class="w-32 h-32 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden relative z-10">
+                        <img src="https://ui-avatars.com/api/?name=Party+2&background=random" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h2 class="text-3xl font-bold mb-1">เบอร์ 2</h2>
+                    <p class="text-blue-400 font-bold text-lg mb-4">พรรคก้าวไกลการเรียน</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">"วิชาการเป็นเลิศ กิจกรรมสร้างสรรค์ พร้อมผลักดันเทคโนโลยี"</p>
+                    <div class="w-full py-4 rounded-xl bg-slate-700 text-slate-300 font-bold group-hover:bg-blue-600 group-hover:text-white transition check-btn shadow-lg">
+                        เลือกเบอร์นี้
+                    </div>
+                </div>
+            </div>
+
+            <div class="party-card bg-slate-800 rounded-[32px] overflow-hidden border border-slate-700 cursor-pointer group relative flex flex-col" onclick="selectParty(3)">
+                <div class="h-48 bg-gradient-to-br from-emerald-600 to-green-800 flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+                    <span class="text-[10rem] font-black text-white/10 absolute -right-8 -bottom-10 group-hover:scale-110 transition duration-500">03</span>
+                    <div class="w-32 h-32 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden relative z-10">
+                        <img src="https://ui-avatars.com/api/?name=Party+3&background=random" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h2 class="text-3xl font-bold mb-1">เบอร์ 3</h2>
+                    <p class="text-emerald-400 font-bold text-lg mb-4">พรรคราชประชาสามัคคี</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6 flex-1">"โปร่งใส ตรวจสอบได้ รับฟังทุกเสียง เพื่อชีวิตความเป็นอยู่ที่ดีขึ้น"</p>
+                    <div class="w-full py-4 rounded-xl bg-slate-700 text-slate-300 font-bold group-hover:bg-emerald-600 group-hover:text-white transition check-btn shadow-lg">
+                        เลือกเบอร์นี้
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="fixed bottom-0 left-0 w-full p-4 bg-slate-900/90 backdrop-blur-xl border-t border-slate-700 transform translate-y-full transition duration-300 z-50 flex justify-center items-center gap-6" id="submit-bar">
+            <div class="text-white font-bold hidden md:block text-lg">
+                คุณเลือก: <span class="text-yellow-400 text-2xl ml-2" id="selected-text">-</span>
+            </div>
+            <button onclick="confirmVote()" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-10 py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 active:scale-95 transition w-full md:w-auto text-lg flex items-center justify-center gap-2">
+                <i class="fas fa-vote-yea"></i> ยืนยันการลงคะแนน
+            </button>
+        </div>
+
+        <div id="voted-msg" class="hidden flex-col items-center justify-center py-20 animate-fade-in min-h-[60vh]">
+            <div class="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-4xl text-white mb-8 shadow-2xl shadow-green-500/50 animate-[bounce_1s_infinite]">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="text-4xl font-black text-white mb-4">ขอบคุณที่ใช้สิทธิ์!</h2>
+            <p class="text-slate-400 text-lg mb-12">ระบบได้บันทึกคะแนนของคุณเรียบร้อยแล้ว</p>
+            
+            <div class="flex flex-col md:flex-row gap-4">
+                <a href="index.html" class="px-8 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 transition font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-home"></i> กลับหน้าหลัก
+                </a>
+                <button onclick="resetMyVote()" class="px-8 py-3 rounded-xl bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20 transition font-bold text-sm">
+                    <i class="fas fa-undo mr-2"></i> โหวตใหม่ (ทดสอบ)
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let selectedParty = null;
+        let counterInterval = null;
+        
+        if(localStorage.getItem('hasVoted')) {
+            showVotedState();
+        } else {
+            updateTotalVotes();
+            counterInterval = setInterval(updateTotalVotes, 3000);
+        }
+
+        async function updateTotalVotes() {
+            try {
+                const res = await fetch('/api/election-results');
+                if(res.ok) {
+                    const data = await res.json();
+                    const el = document.getElementById('live-counter');
+                    if (el.innerText !== data.total.toString()) {
+                        el.classList.add('scale-125', 'text-green-400');
+                        setTimeout(() => el.classList.remove('scale-125', 'text-green-400'), 200);
+                        el.innerText = data.total.toLocaleString();
+                    }
+                }
+            } catch(e) { console.log('API Error'); }
+        }
+
+        function selectParty(num) {
+            if(localStorage.getItem('hasVoted')) return;
+            selectedParty = num;
+            
+            document.querySelectorAll('.party-card').forEach((card, idx) => {
+                const btn = card.querySelector('.check-btn');
+                if (idx + 1 === num) {
+                    card.classList.add('selected');
+                    card.style.opacity = '1';
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> เลือกแล้ว';
+                    btn.className = 'w-full py-4 rounded-xl bg-yellow-500 text-black font-bold transition check-btn shadow-lg scale-105';
+                } else {
+                    card.classList.remove('selected');
+                    card.style.opacity = '0.4';
+                    btn.innerHTML = 'เลือกเบอร์นี้';
+                    btn.className = 'w-full py-4 rounded-xl bg-slate-700 text-slate-300 font-bold group-hover:bg-gray-600 transition check-btn shadow-lg';
+                }
+            });
+
+            document.getElementById('submit-bar').classList.remove('translate-y-full');
+            document.getElementById('selected-text').innerText = `เบอร์ ${num}`;
+        }
+
+        async function confirmVote() {
+            if (!selectedParty) return;
+            if (!confirm(`ยืนยันที่จะเลือก "เบอร์ ${selectedParty}" ใช่หรือไม่?`)) return;
+
+            const btn = document.querySelector('#submit-bar button');
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> กำลังบันทึก...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ party: selectedParty })
+                });
+
+                if (res.ok) {
+                    localStorage.setItem('hasVoted', 'true');
+                    clearInterval(counterInterval);
+                    setTimeout(() => showVotedState(), 500);
+                } else {
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                    btn.innerHTML = oldHtml;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('ไม่สามารถเชื่อมต่อ Server ได้');
+                btn.innerHTML = oldHtml;
+                btn.disabled = false;
+            }
+        }
+
+        function showVotedState() {
+            document.getElementById('header-text').style.display = 'none';
+            document.getElementById('voting-area').style.display = 'none';
+            document.getElementById('submit-bar').style.display = 'none';
+            
+            const votedMsg = document.getElementById('voted-msg');
+            votedMsg.classList.remove('hidden');
+            votedMsg.classList.add('flex');
+        }
+
+        function resetMyVote() {
+            if(confirm('⚠️ ล้างสถานะการโหวตในเครื่องนี้? (สำหรับการทดสอบ)')) {
+                localStorage.removeItem('hasVoted');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

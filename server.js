@@ -1,106 +1,112 @@
-// server.js
+// server.js (รองรับ 3 พรรค)
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
-app.use(cors()); // อนุญาตให้หน้าเว็บ (HTML) คุยกับ Server ได้
-app.use(bodyParser.json());
+const server = http.createServer(app);
+const io = new Server(server);
 
-// ----------------------------------------------------
-// ⚠️ แก้ไขตรงนี้: เอา Link MongoDB ของคุณมาใส่ (Connection String)
-// รูปแบบจะเป็น mongodb+srv://<user>:<password>@...
-const MONGO_URI = "mongodb+srv://footballcggg1234_db_user:rungradit@cluster3.fs13hoe.mongodb.net/?appName=Cluster3";
-// ----------------------------------------------------
+// เชื่อมต่อ MongoDB
+mongoose.connect('mongodb://127.0.0.1:27017/school_vote')
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ MongoDB Error:', err));
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ DB Error:", err));
-
-// --- สร้างโครงสร้างข้อมูล (Schema) ---
-const CandidateSchema = new mongoose.Schema({
-    id: String,
+// --- Schemas ---
+const candidateSchema = new mongoose.Schema({
+    id: Number,
     name: String,
     votes: { type: Number, default: 0 }
 });
-const VoterSchema = new mongoose.Schema({
-    studentId: String,
-    votedAt: { type: Date, default: Date.now }
+const Candidate = mongoose.model('Candidate', candidateSchema);
+
+const stationSchema = new mongoose.Schema({
+    id: Number,
+    isLocked: { type: Boolean, default: true }
 });
+const Station = mongoose.model('Station', stationSchema);
 
-const Candidate = mongoose.model('Candidate', CandidateSchema);
-const Voter = mongoose.model('Voter', VoterSchema);
+// --- Init Data (แก้ใหม่: เช็กทีละตัวเลยว่ามีครบไหม) ---
+async function initDB() {
+    // รายชื่อพรรคที่ต้องการ
+    const candidates = [
+        { id: 1, name: 'พรรคเรียนดี' },
+        { id: 2, name: 'พรรคกิจกรรม' },
+        { id: 3, name: 'พรรคสามัคคี' }, // <--- เพิ่มพรรคที่ 3 ตรงนี้
+        { id: 0, name: 'ไม่ประสงค์ลงคะแนน' }
+    ];
 
-// --- API: สำหรับหน้าโหวต ---
-app.post('/api/vote', async (req, res) => {
-    const { studentId, candidateId } = req.body;
-
-    try {
-        // 1. เช็คว่าโหวตซ้ำไหม
-        const existingVoter = await Voter.findOne({ studentId });
-        if (existingVoter) {
-            return res.status(400).json({ message: "รหัสนี้ใช้สิทธิ์ไปแล้ว!" });
+    for (const c of candidates) {
+        const exist = await Candidate.findOne({ id: c.id });
+        if (!exist) {
+            await Candidate.create({ id: c.id, name: c.name, votes: 0 });
+            console.log(`Created Candidate #${c.id}`);
         }
-
-        // 2. เช็คว่าระบบเปิดหรือยัง (มีผู้สมัครไหม)
-        const candidate = await Candidate.findOne({ id: candidateId });
-        if (!candidate) {
-            return res.status(400).json({ message: "ไม่พบข้อมูลผู้สมัคร หรือระบบยังไม่ถูก Reset" });
-        }
-
-        // 3. บันทึกคนโหวต + บวกคะแนน (ทำพร้อมกัน)
-        await Voter.create({ studentId });
-        await Candidate.findOneAndUpdate({ id: candidateId }, { $inc: { votes: 1 } });
-
-        res.json({ message: "โหวตสำเร็จ!" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
-});
 
-// --- API: ดึงผลคะแนน (สำหรับ Admin) ---
-app.get('/api/stats/admin', async (req, res) => {
-    try {
-        const candidates = await Candidate.find().sort({ votes: -1 });
-        res.json(candidates);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// --- API: ดึงยอดรวม (สำหรับ Screen) ---
-app.get('/api/stats/public', async (req, res) => {
-    try {
-        const candidates = await Candidate.find();
-        const totalVotes = candidates.reduce((sum, item) => sum + item.votes, 0);
-        res.json({ total_votes: totalVotes });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// --- API: รีเซ็ตระบบ (Setup) ---
-app.post('/api/reset', async (req, res) => {
-    try {
-        // ลบข้อมูลเก่าทั้งหมด
-        await Candidate.deleteMany({});
-        await Voter.deleteMany({});
-
-        // สร้างผู้สมัครใหม่ 2 คน
-        await Candidate.create([
-            { id: 'no1', name: 'เบอร์ 1 นายรักเรียน', votes: 0 },
-            { id: 'no2', name: 'เบอร์ 2 นางสาวพัฒนา', votes: 0 }
+    // สร้างเครื่องโหวต 3 เครื่อง
+    if (await Station.countDocuments() === 0) {
+        await Station.create([
+            { id: 1, isLocked: true },
+            { id: 2, isLocked: true },
+            { id: 3, isLocked: true }
         ]);
-
-        res.json({ message: "Reset ระบบเรียบร้อย!" });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.log('✅ Created 3 Stations');
     }
+}
+initDB();
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// --- Socket Logic ---
+io.on('connection', async (socket) => {
+    // ส่งข้อมูลเริ่มต้น
+    const stations = await Station.find().sort({id: 1});
+    const candidates = await Candidate.find();
+    const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
+
+    socket.emit('init_data', { stations, candidates, totalVotes });
+
+    // Admin Action
+    socket.on('admin_unlock_station', async (stationId) => {
+        await Station.updateOne({ id: stationId }, { isLocked: false });
+        io.emit('station_update', { id: stationId, isLocked: false });
+    });
+
+    socket.on('admin_lock_station', async (stationId) => {
+        await Station.updateOne({ id: stationId }, { isLocked: true });
+        io.emit('station_update', { id: stationId, isLocked: true });
+    });
+
+    // Vote Action
+    socket.on('submit_vote', async ({ candidateId, stationId }) => {
+        const st = await Station.findOne({ id: stationId });
+        if (!st || st.isLocked) return;
+
+        await Candidate.updateOne({ id: candidateId }, { $inc: { votes: 1 } });
+        await Station.updateOne({ id: stationId }, { isLocked: true });
+
+        const allCandidates = await Candidate.find();
+        const total = allCandidates.reduce((sum, c) => sum + c.votes, 0);
+        
+        io.emit('station_update', { id: stationId, isLocked: true });
+        io.emit('data_update', { candidates: allCandidates, totalVotes: total });
+    });
+
+    // Reset
+    socket.on('admin_reset', async () => {
+        await Candidate.updateMany({}, { votes: 0 });
+        await Station.updateMany({}, { isLocked: true });
+        // ส่งค่ารีเซ็ตกลับไป
+        const stations = await Station.find().sort({id: 1});
+        const candidates = await Candidate.find();
+        io.emit('reset_all');
+        // บังคับอัปเดตข้อมูลทันทีหลังรีเซ็ต
+        io.emit('init_data', { stations, candidates, totalVotes: 0 });
+    });
 });
 
-// เริ่ม Server
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
