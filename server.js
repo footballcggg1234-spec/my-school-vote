@@ -37,9 +37,9 @@ const Station = mongoose.models.Station || mongoose.model('Station', stationSche
 async function initDB() {
     // 1. สร้างผู้สมัคร
     const candidates = [
-        { id: 1, name: 'พรรคเรียนดี' },
-        { id: 2, name: 'พรรคกิจกรรม' },
-        { id: 3, name: 'พรรคสามัคคี' },
+        { id: 1, name: 'พรรคพรรคภิญโญราช' },
+        { id: 2, name: 'พรรคพรรคราชรุ่งโรจน์' },
+        { id: 3, name: 'พรรคพรรคราชภิวัฒน์' },
         { id: 0, name: 'ไม่ประสงค์ลงคะแนน' }
     ];
     for (const c of candidates) {
