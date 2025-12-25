@@ -16,7 +16,6 @@
             --glass-surface: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
             --glow-color: rgba(99, 102, 241, 0.5);
         }
 
@@ -26,8 +25,6 @@
             --glass-surface: rgba(255, 255, 255, 0.8);
             --glass-border: rgba(0, 0, 0, 0.05);
             --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --glow-color: rgba(14, 165, 233, 0.3);
         }
 
         body {
@@ -38,10 +35,8 @@
             transition: background-color 0.5s ease;
         }
 
-        /* --- BACKGROUND --- */
-        .mesh-bg {
-            position: fixed; inset: 0; z-index: -1;
-        }
+        /* BACKGROUND */
+        .mesh-bg { position: fixed; inset: 0; z-index: -1; }
         .mesh-blob {
             position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5;
             animation: blob-bounce 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
@@ -50,7 +45,7 @@
         .blob-2 { bottom: -20%; right: -20%; width: 60vw; height: 60vw; background: #ec4899; animation-direction: reverse; }
         @keyframes blob-bounce { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, -40px); } }
 
-        /* --- 💎 GLASS CARD (ปกติ) --- */
+        /* GLASS CARD */
         .glass-card {
             background: var(--glass-surface);
             backdrop-filter: blur(20px);
@@ -65,24 +60,19 @@
             border-color: rgba(255,255,255,0.3);
         }
 
-        /* --- ✨ SELECTED STATE (ตอนเลือก - เปลี่ยนสีชัดเจน) --- */
+        /* SELECTED STATE */
         .glass-card.selected {
-            background: linear-gradient(145deg, #fbbf24 0%, #d97706 100%) !important; /* สีทองส้ม */
+            background: linear-gradient(145deg, #fbbf24 0%, #d97706 100%) !important;
             border: 3px solid #fffbeb !important;
-            box-shadow: 0 0 50px rgba(251, 191, 36, 0.5); /* แสงเรืองรอง */
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.5);
             transform: scale(1.05) translateY(-10px);
             color: white !important;
         }
-        /* เปลี่ยนสีตัวหนังสือข้างในตอนเลือก */
-        .glass-card.selected h3, 
-        .glass-card.selected p { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .glass-card.selected .check-btn {
-            background: white; color: #d97706; border: none; font-weight: 900;
-        }
-
+        .glass-card.selected h3, .glass-card.selected p { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .glass-card.selected .check-btn { background: white; color: #d97706; border: none; font-weight: 900; }
         .glass-card.dimmed { opacity: 0.4; filter: grayscale(1); transform: scale(0.95); }
 
-        /* --- BUTTONS --- */
+        /* BUTTONS */
         .btn-main {
             background: linear-gradient(90deg, #f59e0b, #ea580c);
             color: white; border-radius: 99px;
@@ -95,13 +85,8 @@
         .animate-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; transform: translateY(30px); }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* IMAGE STYLES */
-        .candidate-img {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: transform 0.5s ease;
-        }
+        .candidate-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
         .group:hover .candidate-img { transform: scale(1.1); }
-
     </style>
 </head>
 <body>
@@ -125,28 +110,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
             <button onclick="selectStation(1)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between mb-8">
-                    <span class="text-5xl font-bold opacity-30">01</span>
-                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
-                </div>
-                <h3 class="text-3xl font-bold mb-2">คูหา</h3>
-                <p class="opacity-60">สำหรับนักเรียน ม.ต้น</p>
+                <div class="flex justify-between mb-8"><span class="text-5xl font-bold opacity-30">01</span><i class="fa-solid fa-desktop text-3xl opacity-50"></i></div>
+                <h3 class="text-3xl font-bold mb-2">คูหา 1</h3><p class="opacity-60">สำหรับนักเรียน ม.ต้น</p>
             </button>
             <button onclick="selectStation(2)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between mb-8">
-                    <span class="text-5xl font-bold opacity-30">02</span>
-                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
-                </div>
-                <h3 class="text-3xl font-bold mb-2">คูหา</h3>
-                <p class="opacity-60">สำหรับนักเรียน ม.ปลาย</p>
+                <div class="flex justify-between mb-8"><span class="text-5xl font-bold opacity-30">02</span><i class="fa-solid fa-desktop text-3xl opacity-50"></i></div>
+                <h3 class="text-3xl font-bold mb-2">คูหา 2</h3><p class="opacity-60">สำหรับนักเรียน ม.ปลาย</p>
             </button>
             <button onclick="selectStation(3)" class="glass-card p-10 text-left group hover:bg-white/5">
-                <div class="flex justify-between mb-8">
-                    <span class="text-5xl font-bold opacity-30">03</span>
-                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
-                </div>
-                <h3 class="text-3xl font-bold mb-2">จุดเลือกตั้งที่ 3</h3>
-                <p class="opacity-60">สำหรับคุณครู/บุคลากร</p>
+                <div class="flex justify-between mb-8"><span class="text-5xl font-bold opacity-30">03</span><i class="fa-solid fa-desktop text-3xl opacity-50"></i></div>
+                <h3 class="text-3xl font-bold mb-2">จุดที่ 3</h3><p class="opacity-60">สำหรับบุคลากร</p>
             </button>
         </div>
 
@@ -157,7 +130,6 @@
     </div>
 
     <div id="view-voting" class="hidden-section relative z-10 container mx-auto px-4 min-h-screen flex flex-col pb-48">
-        
         <header class="py-8 flex justify-between items-center animate-up">
             <div class="glass-card px-6 py-2 rounded-full flex items-center gap-3">
                 <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -172,7 +144,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto w-full animate-up" style="animation-delay: 0.2s;">
-            
             <div onclick="selectParty(1)" class="glass-card group cursor-pointer p-3">
                 <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
                     <img src="rpg26.jpg" class="candidate-img">
@@ -184,7 +155,6 @@
                     <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
-
             <div onclick="selectParty(2)" class="glass-card group cursor-pointer p-3">
                 <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
                     <img src="rpg261.jpg" class="candidate-img">
@@ -196,7 +166,6 @@
                     <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
-
             <div onclick="selectParty(3)" class="glass-card group cursor-pointer p-3">
                 <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
                     <img src="rpg262.jpg" class="candidate-img">
@@ -208,7 +177,6 @@
                     <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
                 </div>
             </div>
-
             <div onclick="selectParty(0)" class="glass-card group cursor-pointer p-3 border-dashed border-2 border-white/20 bg-transparent shadow-none hover:bg-white/5">
                 <div class="aspect-[3/4] rounded-2xl flex flex-col items-center justify-center mb-4 text-white/30 group-hover:text-white transition">
                     <i class="fa-solid fa-ban text-8xl mb-4"></i>
@@ -220,7 +188,6 @@
                     <button class="w-full py-3 rounded-xl border border-white/10 bg-white/5 font-bold transition check-btn">เลือก</button>
                 </div>
             </div>
-
         </div>
 
         <div id="submit-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-all duration-500 p-6 md:pb-12 flex justify-center">
@@ -271,8 +238,14 @@
                     </div>
                 </div>
                 <div id="admin-results-list" class="space-y-4"></div>
-                <div class="mt-12 text-center">
-                    <button onclick="adminReset()" class="text-red-500 opacity-60 hover:opacity-100 text-sm font-bold flex items-center justify-center gap-2 mx-auto">
+                
+                <div class="mt-12 flex flex-col items-center gap-4">
+                    
+                    <button onclick="startReplayMode()" class="w-full md:w-auto border border-blue-500 text-blue-400 px-8 py-3 rounded-full hover:bg-blue-500 hover:text-white transition flex items-center justify-center gap-3 font-bold">
+                        <i class="fa-solid fa-play"></i> เปิดโหมดลุ้นผล (Replay)
+                    </button>
+
+                    <button onclick="adminReset()" class="text-red-500 opacity-60 hover:opacity-100 text-sm font-bold flex items-center justify-center gap-2">
                         <i class="fa-solid fa-triangle-exclamation"></i> ล้างฐานข้อมูล (Reset)
                     </button>
                 </div>
@@ -290,12 +263,43 @@
         <button onclick="location.reload()" class="fixed bottom-10 left-10 opacity-30 hover:opacity-100"><i class="fa-solid fa-arrow-left text-3xl"></i></button>
     </div>
 
+    <div id="view-replay" class="hidden-section fixed inset-0 z-50 bg-[#020617] flex flex-col items-center justify-center">
+        <div class="absolute top-10 left-0 w-full text-center">
+            <h2 class="text-3xl font-bold text-white/50">การลงคะแนนลำดับที่</h2>
+            <div id="replay-order" class="text-6xl font-black text-white mt-2">?</div>
+        </div>
+
+        <div class="relative w-full max-w-md aspect-[3/4] flex items-center justify-center p-6">
+            
+            <div id="replay-box-closed" class="absolute inset-0 glass-card flex flex-col items-center justify-center z-20 transition-all duration-500 m-6">
+                <div class="w-32 h-32 rounded-full border-4 border-dashed border-white/30 animate-spin mb-6"></div>
+                <h1 class="text-4xl font-bold animate-pulse">กำลังประมวลผล...</h1>
+            </div>
+
+            <div id="replay-box-reveal" class="absolute inset-0 glass-card bg-gradient-to-b from-blue-900 to-black border-2 border-blue-400 hidden-section flex flex-col items-center p-6 z-10 transform scale-90 transition-all duration-500 m-6">
+                <div class="w-full aspect-square rounded-xl overflow-hidden mb-6 shadow-2xl relative bg-gray-800">
+                    <img id="replay-img" src="" class="w-full h-full object-cover">
+                    <div id="replay-no" class="absolute top-2 right-2 w-12 h-12 bg-white text-black font-black text-3xl flex items-center justify-center rounded-full shadow-lg">?</div>
+                </div>
+                <h1 id="replay-name" class="text-3xl font-bold text-center text-white mb-2 leading-tight">Name</h1>
+                <div class="mt-auto w-full">
+                    <div class="bg-white/10 text-center py-2 rounded-lg text-sm">บันทึกเมื่อ: <span id="replay-time">-</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="fixed bottom-10 flex gap-4">
+            <button onclick="location.reload()" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20">กลับหน้าหลัก</button>
+        </div>
+    </div>
+
     <script>
         const socket = io();
         let myStationId = null;
         let selectedParty = null;
 
-        // --- Theme Logic ---
+        // --- Theme ---
         function initTheme() {
             const saved = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', saved);
@@ -309,8 +313,7 @@
             updateIcon(next);
         }
         function updateIcon(t) {
-            const icon = document.getElementById('theme-icon');
-            icon.className = t === 'dark' ? 'fas fa-moon text-white' : 'fas fa-sun text-yellow-500';
+            document.getElementById('theme-icon').className = t === 'dark' ? 'fas fa-moon text-white' : 'fas fa-sun text-yellow-500';
         }
         initTheme();
 
@@ -329,21 +332,34 @@
         }
 
         // --- Socket Events ---
-        socket.on('init_data', (data) => { updateAdminUI(data.stations); updateScores(data.candidates, data.totalVotes); if(myStationId) { const s = data.stations.find(x => x.id === myStationId); if(s) setLockScreen(s.isLocked); } });
-        socket.on('station_update', (data) => { updateSingleStationBtn(data); if(myStationId && data.id === myStationId) setLockScreen(data.isLocked); });
+        socket.on('init_data', (data) => {
+            updateAdminUI(data.stations);
+            updateScores(data.candidates, data.totalVotes);
+            if(myStationId) {
+                const s = data.stations.find(x => x.id === myStationId);
+                if(s) setLockScreen(s.isLocked);
+            }
+        });
+        socket.on('station_update', (data) => {
+            updateSingleStationBtn(data);
+            if(myStationId && data.id === myStationId) setLockScreen(data.isLocked);
+        });
         socket.on('data_update', (data) => updateScores(data.candidates, data.totalVotes));
         socket.on('reset_all', () => { alert('ระบบถูกรีเซ็ตแล้ว'); location.reload(); });
 
-        function setLockScreen(isLocked) { const el = document.getElementById('view-locked'); if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } else { el.classList.add('hidden-section'); } }
-        
-        // --- Selection Logic ---
+        function setLockScreen(isLocked) {
+            const el = document.getElementById('view-locked');
+            if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } 
+            else { el.classList.add('hidden-section'); }
+        }
+
+        // --- Voting Logic ---
         function selectParty(id) {
             selectedParty = id;
-            // Reset styles
             document.querySelectorAll('.glass-card.group').forEach(c => { 
                 c.classList.remove('selected', 'dimmed'); 
                 const btn = c.querySelector('.check-btn');
-                if(btn) { btn.innerHTML = 'เลือกเบอร์นี้'; }
+                if(btn) btn.innerHTML = 'เลือกเบอร์นี้';
             });
             
             const cards = document.querySelectorAll('#view-voting .glass-card.group');
@@ -353,7 +369,7 @@
                 t.classList.add('selected'); 
                 cards.forEach(c => { if(c!==t) c.classList.add('dimmed'); });
                 const btn = t.querySelector('.check-btn');
-                if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> เลือกแล้ว'; }
+                if(btn) btn.innerHTML = '<i class="fa-solid fa-check"></i> เลือกแล้ว';
             }
             document.getElementById('submit-bar').classList.remove('translate-y-full');
             document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
@@ -368,14 +384,13 @@
         
         function confirmVote() {
             if (selectedParty === null) return;
-            // if (!confirm('ยืนยันการลงคะแนน?')) return; // ตัด confirm ออกเพื่อให้เร็วขึ้นตามสไตล์ Kiosk
             socket.emit('submit_vote', { candidateId: selectedParty });
             document.getElementById('view-success').classList.remove('hidden-section');
             resetSelection();
             setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); }, 3000);
         }
 
-        // --- Admin & Stats ---
+        // --- Admin Functions ---
         function updateAdminUI(stations) {
             const list = document.getElementById('admin-station-list');
             if(!list) return;
@@ -417,6 +432,82 @@
             }
         }
         function adminReset() { if(confirm('ยืนยันล้างคะแนนทั้งหมด?')) socket.emit('admin_reset'); }
+
+        // --- REPLAY MODE LOGIC (ส่วนใหม่) ---
+        function startReplayMode() {
+            socket.emit('admin_get_logs');
+        }
+
+        socket.on('receive_all_logs', (logs) => {
+            if(logs.length === 0) { alert("ยังไม่มีข้อมูลการลงคะแนน"); return; }
+            
+            document.getElementById('view-admin').classList.add('hidden-section');
+            document.getElementById('view-replay').classList.remove('hidden-section');
+            
+            playReplaySequence(logs, 0);
+        });
+
+        function playReplaySequence(logs, index) {
+            if (index >= logs.length) {
+                alert("สิ้นสุดการนำเสนอผลคะแนน!");
+                return;
+            }
+
+            const log = logs[index];
+            const boxClosed = document.getElementById('replay-box-closed');
+            const boxReveal = document.getElementById('replay-box-reveal');
+            
+            // 1. Reset State
+            boxClosed.classList.remove('hidden-section', 'opacity-0');
+            boxReveal.classList.add('hidden-section');
+            boxReveal.classList.remove('scale-100');
+            boxReveal.classList.add('scale-90');
+
+            // Set Data
+            document.getElementById('replay-order').innerText = log.order;
+
+            const imgMap = {
+                1: 'rpg26.jpg',
+                2: 'rpg261.jpg',
+                3: 'rpg262.jpg',
+                0: ''
+            };
+
+            if(log.candidateId == 0) {
+                document.getElementById('replay-img').style.display = 'none';
+                document.getElementById('replay-no').innerText = 'X';
+            } else {
+                document.getElementById('replay-img').style.display = 'block';
+                document.getElementById('replay-img').src = imgMap[log.candidateId] || '';
+                document.getElementById('replay-no').innerText = log.candidateId;
+            }
+            
+            document.getElementById('replay-name').innerText = log.candidateName;
+            document.getElementById('replay-time').innerText = new Date(log.timestamp).toLocaleTimeString('th-TH');
+
+            // 2. Loading Phase (2 วินาที)
+            setTimeout(() => {
+                boxClosed.classList.add('opacity-0');
+                
+                // 3. Reveal Phase
+                setTimeout(() => {
+                    boxClosed.classList.add('hidden-section');
+                    boxReveal.classList.remove('hidden-section');
+                    
+                    requestAnimationFrame(() => {
+                        boxReveal.classList.remove('scale-90');
+                        boxReveal.classList.add('scale-100');
+                    });
+
+                    // 4. Show Time (3 วินาที) แล้วไปคนต่อไป
+                    setTimeout(() => {
+                        playReplaySequence(logs, index + 1);
+                    }, 3000); // <-- แก้เวลาโชว์ตรงนี้
+
+                }, 500); 
+            }, 2000); // <-- แก้เวลาหมุนรอตรงนี้
+        }
+
     </script>
 </body>
 </html>
