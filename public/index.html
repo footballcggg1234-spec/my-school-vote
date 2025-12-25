@@ -3,157 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPK26 | Live Vote</title>
+    <title>RPK26 | ระบบเลือกตั้ง</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700;900&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #0f172a; color: white; overflow: hidden; }
-        
-        /* POPUP ANIMATION */
-        .popup-card {
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scale(0); opacity: 0;
+        :root {
+            /* --- 🌑 DARK THEME --- */
+            --bg-color: #020617;
+            --glass-surface: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --glow-color: rgba(99, 102, 241, 0.5);
         }
-        .popup-card.active {
-            transform: scale(1); opacity: 1;
-        }
-        
-        /* BACKGROUND */
-        .bg-animated {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
-        }
-        
-        .waiting-pulse { animation: pulse-slow 2s infinite; }
-        @keyframes pulse-slow { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
 
-        /* VOTE CARD STYLES */
-        .card-1 { background: linear-gradient(135deg, #ef4444, #b91c1c); border: 4px solid #fecaca; box-shadow: 0 0 50px rgba(239, 68, 68, 0.5); }
-        .card-2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 4px solid #bfdbfe; box-shadow: 0 0 50px rgba(59, 130, 246, 0.5); }
-        .card-3 { background: linear-gradient(135deg, #10b981, #047857); border: 4px solid #a7f3d0; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); }
-        .card-0 { background: linear-gradient(135deg, #64748b, #334155); border: 4px solid #e2e8f0; box-shadow: 0 0 50px rgba(100, 116, 139, 0.5); }
+        [data-theme="light"] {
+            /* --- ⚪ LIGHT THEME --- */
+            --bg-color: #f0f9ff;
+            --glass-surface: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glow-color: rgba(14, 165, 233, 0.3);
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- BACKGROUND --- */
+        .mesh-bg {
+            position: fixed; inset: 0; z-index: -1;
+        }
+        .mesh-blob {
+            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5;
+            animation: blob-bounce 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .blob-1 { top: -10%; left: -10%; width: 70vw; height: 70vw; background: #4f46e5; }
+        .blob-2 { bottom: -20%; right: -20%; width: 60vw; height: 60vw; background: #ec4899; animation-direction: reverse; }
+        @keyframes blob-bounce { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, -40px); } }
+
+        /* --- 💎 GLASS CARD (ปกติ) --- */
+        .glass-card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative; overflow: hidden;
+        }
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        /* --- ✨ SELECTED STATE (ตอนเลือก - เปลี่ยนสีชัดเจน) --- */
+        .glass-card.selected {
+            background: linear-gradient(145deg, #fbbf24 0%, #d97706 100%) !important; /* สีทองส้ม */
+            border: 3px solid #fffbeb !important;
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.5); /* แสงเรืองรอง */
+            transform: scale(1.05) translateY(-10px);
+            color: white !important;
+        }
+        /* เปลี่ยนสีตัวหนังสือข้างในตอนเลือก */
+        .glass-card.selected h3, 
+        .glass-card.selected p { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .glass-card.selected .check-btn {
+            background: white; color: #d97706; border: none; font-weight: 900;
+        }
+
+        .glass-card.dimmed { opacity: 0.4; filter: grayscale(1); transform: scale(0.95); }
+
+        /* --- BUTTONS --- */
+        .btn-main {
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            color: white; border-radius: 99px;
+            box-shadow: 0 10px 30px -5px rgba(234, 88, 12, 0.4);
+            transition: transform 0.2s;
+        }
+        .btn-main:active { transform: scale(0.95); }
 
         .hidden-section { display: none !important; }
+        .animate-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; transform: translateY(30px); }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* IMAGE STYLES */
+        .candidate-img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .group:hover .candidate-img { transform: scale(1.1); }
+
     </style>
 </head>
 <body>
 
-    <div id="view-landing" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
-        <h1 class="text-6xl font-black text-white mb-8 tracking-tighter">ELECTION SYSTEM</h1>
+    <div class="mesh-bg">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+    </div>
+
+    <button onclick="toggleTheme()" class="fixed top-5 right-5 z-50 w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-white/20 transition">
+        <i id="theme-icon" class="fas fa-moon text-white"></i>
+    </button>
+
+    <div id="view-landing" class="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 animate-up">
+        <div class="text-center mb-16">
+            <h1 class="text-6xl md:text-8xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-lg">
+                ระบบเลือกตั้ง
+            </h1>
+            <p class="text-2xl font-light opacity-80">สภานักเรียนโรงเรียนประชาราชสงเคราะห์ 26</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+            <button onclick="selectStation(1)" class="glass-card p-10 text-left group hover:bg-white/5">
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">01</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-2">คูหา</h3>
+                <p class="opacity-60">สำหรับนักเรียน ม.ต้น</p>
+            </button>
+            <button onclick="selectStation(2)" class="glass-card p-10 text-left group hover:bg-white/5">
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">02</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-2">คูหา</h3>
+                <p class="opacity-60">สำหรับนักเรียน ม.ปลาย</p>
+            </button>
+            <button onclick="selectStation(3)" class="glass-card p-10 text-left group hover:bg-white/5">
+                <div class="flex justify-between mb-8">
+                    <span class="text-5xl font-bold opacity-30">03</span>
+                    <i class="fa-solid fa-desktop text-3xl opacity-50"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-2">จุดเลือกตั้งที่ 3</h3>
+                <p class="opacity-60">สำหรับคุณครู/บุคลากร</p>
+            </button>
+        </div>
+
+        <div class="mt-16 flex gap-6 opacity-60">
+             <button onclick="enterMode('admin')" class="hover:text-white transition"><i class="fa-solid fa-lock mr-2"></i>ผู้ดูแลระบบ</button>
+             <button onclick="enterMode('live')" class="hover:text-white transition"><i class="fa-solid fa-chart-pie mr-2"></i>จอแสดงผล</button>
+        </div>
+    </div>
+
+    <div id="view-voting" class="hidden-section relative z-10 container mx-auto px-4 min-h-screen flex flex-col pb-48">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-12">
-            <button onclick="selectStation(1)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
-                <div class="text-4xl font-bold mb-2">01</div>
-                <div>จุดเลือกตั้งที่ 1</div>
-            </button>
-            <button onclick="selectStation(2)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
-                <div class="text-4xl font-bold mb-2">02</div>
-                <div>จุดเลือกตั้งที่ 2</div>
-            </button>
-            <button onclick="selectStation(3)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
-                <div class="text-4xl font-bold mb-2">03</div>
-                <div>จุดเลือกตั้งที่ 3</div>
-            </button>
-        </div>
-
-        <div class="flex gap-4">
-            <button onclick="enterMode('live')" class="px-8 py-3 rounded-full bg-blue-600 font-bold hover:bg-blue-500 shadow-lg text-lg">
-                <i class="fa-solid fa-tv mr-2"></i> จอแสดงผลสด (LIVE)
-            </button>
-            <button onclick="enterMode('admin')" class="px-8 py-3 rounded-full border border-white/30 font-bold hover:bg-white/10">
-                Admin
-            </button>
-        </div>
-    </div>
-
-    <div id="view-live" class="hidden-section fixed inset-0 flex items-center justify-center overflow-hidden">
-        <div class="bg-animated"></div> <div id="waiting-state" class="text-center absolute transition-opacity duration-500">
-            <div class="text-9xl text-white/10 mb-4 waiting-pulse"><i class="fa-solid fa-box-open"></i></div>
-            <h1 class="text-4xl font-bold text-white/30 tracking-[0.2em] uppercase">Waiting for votes...</h1>
-            <div class="mt-8 text-white/50 text-xl">ยอดผู้ใช้สิทธิ์: <span id="live-total-count" class="font-black text-white text-3xl">0</span></div>
-        </div>
-
-        <div id="popup-card" class="popup-card relative z-50 w-full max-w-2xl mx-4 rounded-[3rem] p-10 text-center text-white card-1">
-            <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-8 py-2 rounded-full font-black text-xl shadow-lg border-4 border-slate-900 tracking-widest">
-                VOTE #<span id="popup-order">000</span>
+        <header class="py-8 flex justify-between items-center animate-up">
+            <div class="glass-card px-6 py-2 rounded-full flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="font-bold text-sm opacity-80">คูหา <span id="station-badge">?</span></span>
             </div>
-            
-            <div class="mt-4 mb-2 opacity-80 text-lg uppercase tracking-widest font-bold">Selected Candidate</div>
-            
-            <div class="w-48 h-48 mx-auto mb-6 rounded-full border-4 border-white/50 shadow-2xl overflow-hidden bg-white">
-                <img id="popup-img" src="" class="w-full h-full object-cover">
-            </div>
-
-            <h1 id="popup-number" class="text-8xl font-black mb-2 drop-shadow-md">01</h1>
-            <h2 id="popup-name" class="text-4xl font-bold drop-shadow-sm">ชื่อพรรค...</h2>
-        </div>
-    </div>
-
-    <div id="view-voting" class="hidden-section min-h-screen flex flex-col p-6 pb-32">
-        <header class="flex justify-between items-center mb-8">
-            <div class="bg-white/10 px-4 py-2 rounded-full backdrop-blur">Station <span id="station-badge">?</span></div>
-            <div class="font-bold opacity-50">RPK26</div>
+            <div class="font-bold text-xl opacity-30">RPK26 ELECTION</div>
         </header>
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-bold">เลือกตั้งสภานักเรียน</h1>
+
+        <div class="text-center mb-12 animate-up" style="animation-delay: 0.1s;">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 drop-shadow-xl">เลือกตั้งเพื่ออนาคต</h1>
+            <p class="text-xl opacity-70">1 เสียงของคุณ เปลี่ยนแปลงโรงเรียนได้</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto w-full">
-            <div onclick="selectParty(1)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-red-500 shadow-lg">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/1.jpg" class="w-full h-full object-cover"></div>
-                <h3 class="text-2xl font-bold">เบอร์ 1</h3><p>พรรคภิญโญราช</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto w-full animate-up" style="animation-delay: 0.2s;">
+            
+            <div onclick="selectParty(1)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg26.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">1</div>
+                </div>
+                <div class="px-2 pb-4 text-center">
+                    <h3 class="text-2xl font-bold mb-1">พรรคภิญโญราช</h3>
+                    <p class="text-sm opacity-60 mb-4">วิชาการล้ำหน้า พัฒนาสู่สากล</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
+                </div>
             </div>
-            <div onclick="selectParty(2)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-blue-500 shadow-lg">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/2.jpg" class="w-full h-full object-cover"></div>
-                <h3 class="text-2xl font-bold">เบอร์ 2</h3><p>พรรคราชรุ่งโรจน์</p>
+
+            <div onclick="selectParty(2)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg261.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">2</div>
+                </div>
+                <div class="px-2 pb-4 text-center">
+                    <h3 class="text-2xl font-bold mb-1">พรรคราชรุ่งโรจน์</h3>
+                    <p class="text-sm opacity-60 mb-4">กิจกรรมเด่น เน้นความสุข</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
+                </div>
             </div>
-            <div onclick="selectParty(3)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-green-500 shadow-lg">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/3.jpg" class="w-full h-full object-cover"></div>
-                <h3 class="text-2xl font-bold">เบอร์ 3</h3><p>พรรคราชภิวัฒน์</p>
+
+            <div onclick="selectParty(3)" class="glass-card group cursor-pointer p-3">
+                <div class="aspect-[3/4] rounded-2xl bg-gray-800 relative mb-4 overflow-hidden">
+                    <img src="rpg262.jpg" class="candidate-img">
+                    <div class="absolute top-2 right-2 bg-white text-black font-black text-2xl w-10 h-10 rounded-full flex items-center justify-center shadow-lg">3</div>
+                </div>
+                <div class="px-2 pb-4 text-center">
+                    <h3 class="text-2xl font-bold mb-1">พรรคราชภิวัฒน์</h3>
+                    <p class="text-sm opacity-60 mb-4">โปร่งใส ตรวจสอบได้</p>
+                    <button class="w-full py-3 rounded-xl border border-white/20 bg-white/5 font-bold transition check-btn">เลือกเบอร์นี้</button>
+                </div>
             </div>
-            <div onclick="selectParty(0)" class="bg-slate-700 p-4 rounded-xl text-white cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-slate-500 shadow-lg flex flex-col justify-center text-center">
-                <div class="h-32 flex items-center justify-center text-5xl mb-4"><i class="fa-solid fa-ban"></i></div>
-                <h3 class="text-2xl font-bold">ไม่ประสงค์ลงคะแนน</h3>
+
+            <div onclick="selectParty(0)" class="glass-card group cursor-pointer p-3 border-dashed border-2 border-white/20 bg-transparent shadow-none hover:bg-white/5">
+                <div class="aspect-[3/4] rounded-2xl flex flex-col items-center justify-center mb-4 text-white/30 group-hover:text-white transition">
+                    <i class="fa-solid fa-ban text-8xl mb-4"></i>
+                    <span class="text-2xl font-bold">X</span>
+                </div>
+                <div class="px-2 pb-4 text-center">
+                    <h3 class="text-xl font-bold opacity-60 mb-1">ไม่ประสงค์ลงคะแนน</h3>
+                    <p class="text-sm opacity-40 mb-4">งดออกเสียง</p>
+                    <button class="w-full py-3 rounded-xl border border-white/10 bg-white/5 font-bold transition check-btn">เลือก</button>
+                </div>
             </div>
+
         </div>
-        
-        <div id="submit-bar" class="fixed bottom-0 left-0 w-full p-6 flex justify-center translate-y-full transition-transform duration-300 z-50">
-            <div class="bg-white text-slate-900 px-8 py-4 rounded-full shadow-2xl flex items-center gap-6">
-                <div class="font-bold text-xl">เลือก: <span id="selected-text" class="text-blue-600 font-black">-</span></div>
-                <button onclick="confirmVote()" class="bg-black text-white px-8 py-2 rounded-full font-bold hover:bg-gray-800">ยืนยัน</button>
+
+        <div id="submit-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-all duration-500 p-6 md:pb-12 flex justify-center">
+            <div class="w-full max-w-3xl glass-card rounded-full p-2 pl-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl bg-black/80 backdrop-blur-xl border-t border-white/20">
+                <div class="flex-1 flex items-center gap-6 w-full md:w-auto">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg animate-bounce">
+                        <i class="fa-solid fa-check text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">ยืนยันการเลือก</div>
+                        <div class="text-3xl font-bold leading-none text-white" id="selected-text">-</div>
+                    </div>
+                </div>
+                <button onclick="confirmVote()" class="btn-main px-12 py-4 text-xl font-bold flex items-center gap-3 hover:scale-105 transition">
+                    ยืนยันการลงคะแนน <i class="fa-solid fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="view-success" class="hidden-section fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-center">
-        <i class="fa-solid fa-check-circle text-8xl text-green-500 mb-6 animate-bounce"></i>
-        <h1 class="text-5xl font-bold mb-2">เรียบร้อย!</h1>
-        <p class="text-xl opacity-60">ขอบคุณที่ใช้สิทธิ์</p>
+    <div id="view-success" class="hidden-section fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 animate-up">
+        <div class="w-40 h-40 rounded-full bg-green-500 flex items-center justify-center mb-8 shadow-2xl animate-pulse">
+            <i class="fa-solid fa-check text-7xl text-white"></i>
+        </div>
+        <h1 class="text-6xl font-bold text-white mb-2">ขอบคุณครับ</h1>
+        <p class="text-2xl text-green-400 font-light">บันทึกคะแนนเรียบร้อยแล้ว</p>
     </div>
 
-    <div id="view-admin" class="hidden-section min-h-screen p-8 bg-slate-100 text-slate-900">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex justify-between items-center mb-8"><h1 class="text-2xl font-bold">Admin Console</h1><button onclick="location.reload()" class="text-red-500 font-bold">Exit</button></div>
-            <div class="grid grid-cols-3 gap-4 mb-8" id="admin-station-list"></div>
-            <div class="bg-white p-6 rounded-xl shadow">
+    <div id="view-locked" class="hidden-section fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6">
+        <i class="fa-solid fa-lock text-6xl text-red-500 mb-6 drop-shadow-lg"></i>
+        <h1 class="text-5xl font-bold text-white mb-2">ปิดระบบชั่วคราว</h1>
+        <p class="text-xl opacity-60">กรุณารอเจ้าหน้าที่เปิดเครื่อง</p>
+    </div>
+
+    <div id="view-admin" class="hidden-section min-h-screen p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-12">
+                <h1 class="text-3xl font-bold">แผงควบคุม (Admin)</h1>
+                <button onclick="location.reload()" class="opacity-50 hover:opacity-100 border px-4 py-2 rounded-lg">ออกจากระบบ</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" id="admin-station-list"></div>
+            <div class="glass-card p-10 bg-white/5">
+                <div class="flex justify-between items-end mb-8 border-b border-white/10 pb-6">
+                    <h3 class="text-2xl font-bold">ผลคะแนนสด</h3>
+                    <div class="text-right">
+                        <p class="text-xs opacity-50 mb-1">ยอดผู้มาใช้สิทธิ์</p>
+                        <div class="text-6xl font-black text-blue-400" id="admin-total-votes">0</div>
+                    </div>
+                </div>
                 <div id="admin-results-list" class="space-y-4"></div>
-                <button onclick="if(confirm('Reset?')) socket.emit('admin_reset')" class="mt-8 text-red-500 text-sm underline w-full text-center">Reset System</button>
+                <div class="mt-12 text-center">
+                    <button onclick="adminReset()" class="text-red-500 opacity-60 hover:opacity-100 text-sm font-bold flex items-center justify-center gap-2 mx-auto">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ล้างฐานข้อมูล (Reset)
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div id="view-live" class="hidden-section min-h-screen flex flex-col items-center justify-center text-center p-6">
+        <div class="glass-card px-8 py-3 rounded-full mb-12 flex items-center gap-3">
+            <span class="w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
+            <span class="font-bold opacity-80">ถ่ายทอดสดคะแนน</span>
+        </div>
+        <h1 class="text-6xl font-bold opacity-30 mb-2">ยอดผู้มาใช้สิทธิ์</h1>
+        <div id="live-total" class="text-[20rem] font-black leading-none drop-shadow-2xl">0</div>
+        <button onclick="location.reload()" class="fixed bottom-10 left-10 opacity-30 hover:opacity-100"><i class="fa-solid fa-arrow-left text-3xl"></i></button>
     </div>
 
     <script>
         const socket = io();
         let myStationId = null;
         let selectedParty = null;
-        
-        // --- QUEUE SYSTEM FOR POPUP ---
-        let voteQueue = [];
-        let isShowingPopup = false;
 
-        // Navigation
+        // --- Theme Logic ---
+        function initTheme() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            updateIcon(saved);
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateIcon(next);
+        }
+        function updateIcon(t) {
+            const icon = document.getElementById('theme-icon');
+            icon.className = t === 'dark' ? 'fas fa-moon text-white' : 'fas fa-sun text-yellow-500';
+        }
+        initTheme();
+
+        // --- Navigation ---
         function selectStation(id) {
             myStationId = id;
             document.getElementById('station-badge').innerText = id;
@@ -167,115 +328,95 @@
             if(mode === 'admin') socket.emit('request_status');
         }
 
-        // Socket Events
-        socket.on('init_data', (data) => {
-            updateAdminUI(data.stations);
-            updateScores(data.candidates, data.totalVotes);
-        });
+        // --- Socket Events ---
+        socket.on('init_data', (data) => { updateAdminUI(data.stations); updateScores(data.candidates, data.totalVotes); if(myStationId) { const s = data.stations.find(x => x.id === myStationId); if(s) setLockScreen(s.isLocked); } });
+        socket.on('station_update', (data) => { updateSingleStationBtn(data); if(myStationId && data.id === myStationId) setLockScreen(data.isLocked); });
+        socket.on('data_update', (data) => updateScores(data.candidates, data.totalVotes));
+        socket.on('reset_all', () => { alert('ระบบถูกรีเซ็ตแล้ว'); location.reload(); });
 
-        socket.on('data_update', (data) => {
-            updateScores(data.candidates, data.totalVotes);
-            // เมื่อมี Log ใหม่ ให้ยัดเข้าคิว
-            if(data.newLog) {
-                voteQueue.push(data.newLog);
-                processQueue(); // สั่งให้เริ่มแสดงผล
-            }
-        });
-
-        socket.on('reset_all', () => { location.reload(); });
-
-        // --- POPUP LOGIC (หัวใจสำคัญ) ---
-        function processQueue() {
-            // ถ้ากำลังโชว์อยู่ หรือ คิวว่าง ให้หยุดก่อน
-            if (isShowingPopup || voteQueue.length === 0) return;
-
-            isShowingPopup = true; // ล็อกสถานะ
-            const log = voteQueue.shift(); // ดึงคนแรกออกจากคิว
-
-            showPopup(log);
-        }
-
-        function showPopup(log) {
-            const popup = document.getElementById('popup-card');
-            const waiting = document.getElementById('waiting-state');
-            
-            // 1. อัปเดตข้อมูลในการ์ด
-            document.getElementById('popup-order').innerText = String(log.order).padStart(3, '0');
-            document.getElementById('popup-name').innerText = log.candidateName;
-            
-            // ตั้งค่าสีและรูปตามเบอร์
-            let imgPath = '';
-            popup.className = 'popup-card relative z-50 w-full max-w-2xl mx-4 rounded-[3rem] p-10 text-center text-white '; // Reset class
-            
-            if(log.candidateId === 1) { 
-                popup.classList.add('card-1'); 
-                document.getElementById('popup-number').innerText = '01';
-                imgPath = 'images/1.jpg';
-            } else if(log.candidateId === 2) { 
-                popup.classList.add('card-2');
-                document.getElementById('popup-number').innerText = '02';
-                imgPath = 'images/2.jpg';
-            } else if(log.candidateId === 3) { 
-                popup.classList.add('card-3');
-                document.getElementById('popup-number').innerText = '03';
-                imgPath = 'images/3.jpg';
-            } else { 
-                popup.classList.add('card-0');
-                document.getElementById('popup-number').innerText = 'งดออกเสียง';
-                imgPath = 'https://placehold.co/400x400?text=X'; // รูปกากบาท
-            }
-            
-            document.getElementById('popup-img').src = imgPath;
-
-            // 2. ซ่อน Waiting, โชว์ Popup
-            waiting.style.opacity = '0';
-            setTimeout(() => {
-                popup.classList.add('active'); // เด้งขึ้นมา
-                
-                // 3. รอ 4 วินาที แล้วซ่อน
-                setTimeout(() => {
-                    popup.classList.remove('active'); // หุบลงไป
-                    
-                    setTimeout(() => {
-                        waiting.style.opacity = '1'; // Waiting กลับมา
-                        isShowingPopup = false; // ปลดล็อก
-                        processQueue(); // เช็กว่ามีคนต่อคิวไหม ถ้ามีก็โชว์ต่อเลย
-                    }, 500); // รอ animation จบ
-                    
-                }, 4000); // โชว์ค้างไว้ 4 วิ
-
-            }, 200);
-        }
-
-        // --- Other Logic ---
+        function setLockScreen(isLocked) { const el = document.getElementById('view-locked'); if(isLocked) { el.classList.remove('hidden-section'); resetSelection(); } else { el.classList.add('hidden-section'); } }
+        
+        // --- Selection Logic ---
         function selectParty(id) {
             selectedParty = id;
+            // Reset styles
+            document.querySelectorAll('.glass-card.group').forEach(c => { 
+                c.classList.remove('selected', 'dimmed'); 
+                const btn = c.querySelector('.check-btn');
+                if(btn) { btn.innerHTML = 'เลือกเบอร์นี้'; }
+            });
+            
+            const cards = document.querySelectorAll('#view-voting .glass-card.group');
+            let t = (id === 0) ? cards[3] : cards[id-1];
+            
+            if(t) { 
+                t.classList.add('selected'); 
+                cards.forEach(c => { if(c!==t) c.classList.add('dimmed'); });
+                const btn = t.querySelector('.check-btn');
+                if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> เลือกแล้ว'; }
+            }
             document.getElementById('submit-bar').classList.remove('translate-y-full');
             document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
+        }
+
+        function resetSelection() { 
+            selectedParty = null; 
+            const cards = document.querySelectorAll('#view-voting .glass-card.group');
+            cards.forEach(c => { c.classList.remove('selected', 'dimmed'); }); 
+            document.getElementById('submit-bar').classList.add('translate-y-full'); 
         }
         
         function confirmVote() {
             if (selectedParty === null) return;
+            // if (!confirm('ยืนยันการลงคะแนน?')) return; // ตัด confirm ออกเพื่อให้เร็วขึ้นตามสไตล์ Kiosk
             socket.emit('submit_vote', { candidateId: selectedParty });
             document.getElementById('view-success').classList.remove('hidden-section');
-            setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); location.reload(); }, 2000);
+            resetSelection();
+            setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); }, 3000);
         }
 
+        // --- Admin & Stats ---
         function updateAdminUI(stations) {
             const list = document.getElementById('admin-station-list');
             if(!list) return;
-            list.innerHTML = stations.map(s => `<div class="bg-white p-4 rounded text-center border">Station ${s.id}: ${s.isLocked?'LOCKED':'READY'}</div>`).join('');
+            list.innerHTML = stations.map(s => `
+                <div onclick="toggleLock(${s.id}, ${s.isLocked})" 
+                    class="glass-card p-6 cursor-pointer text-center flex flex-col items-center gap-4 ${s.isLocked ? 'opacity-50' : ''}">
+                    <div class="text-sm opacity-50">STATION 0${s.id}</div>
+                    <div class="text-4xl ${s.isLocked ? 'text-red-500' : 'text-green-500'}"><i class="fa-solid ${s.isLocked ? 'fa-lock' : 'fa-unlock'}"></i></div>
+                    <div class="text-xs font-bold border px-2 py-1 rounded opacity-60">${s.isLocked ? 'LOCKED' : 'ONLINE'}</div>
+                </div>
+            `).join('');
         }
+        function updateSingleStationBtn(data) { socket.emit('request_status'); }
+        function toggleLock(id, status) { socket.emit(status ? 'admin_unlock_station' : 'admin_lock_station', id); }
+        
         function updateScores(cands, total) {
-            const liveCount = document.getElementById('live-total-count');
-            if(liveCount) liveCount.innerText = total; // อัปเดตยอดรวมในหน้า Live
+            const liveTotal = document.getElementById('live-total');
+            if(liveTotal) liveTotal.innerText = total;
+            const adminTotal = document.getElementById('admin-total-votes');
+            if(adminTotal) adminTotal.innerText = total.toLocaleString();
 
             const adminList = document.getElementById('admin-results-list');
             if(adminList) { 
                 const sorted = [...cands].sort((a,b) => b.votes - a.votes); 
-                adminList.innerHTML = sorted.map(c => `<div class="flex justify-between p-2 border-b"><span>${c.name}</span><span class="font-bold">${c.votes}</span></div>`).join(''); 
+                const max = sorted.length > 0 ? sorted[0].votes : 1;
+                adminList.innerHTML = sorted.map(c => {
+                    const percent = (c.votes / (max || 1)) * 100;
+                    return `
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-lg">${c.name}</span>
+                            <span class="text-xl font-bold">${c.votes}</span>
+                        </div>
+                        <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full transition-all duration-700" style="width: ${percent}%"></div>
+                        </div>
+                    </div>`;
+                }).join(''); 
             }
         }
+        function adminReset() { if(confirm('ยืนยันล้างคะแนนทั้งหมด?')) socket.emit('admin_reset'); }
     </script>
 </body>
 </html>
