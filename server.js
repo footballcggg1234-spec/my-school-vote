@@ -1,3 +1,4 @@
+// server.js (เวอร์ชันรองรับ Live Popup)
 const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
@@ -31,11 +32,10 @@ const stationSchema = new mongoose.Schema({
 });
 const Station = mongoose.models.Station || mongoose.model('Station', stationSchema);
 
-// เพิ่ม Schema สำหรับเก็บประวัติการโหวต (Log)
 const voteLogSchema = new mongoose.Schema({
-    order: Number,          // ลำดับที่ (คนที่ 1, 2, 3...)
-    candidateId: Number,    // เลือกเบอร์ไหน
-    candidateName: String,  // ชื่อพรรค (จะได้ไม่ต้องไปหาทีหลัง)
+    order: Number,
+    candidateId: Number,
+    candidateName: String,
     timestamp: { type: Date, default: Date.now }
 });
 const VoteLog = mongoose.model('VoteLog', voteLogSchema);
@@ -48,11 +48,9 @@ async function initDB() {
         { id: 3, name: 'พรรคราชภิวัฒน์' },
         { id: 0, name: 'ไม่ประสงค์ลงคะแนน' }
     ];
-
     for (const c of candidates) {
         await Candidate.updateOne({ id: c.id }, { name: c.name }, { upsert: true });
     }
-
     for (let i = 1; i <= 3; i++) {
         const exist = await Station.findOne({ id: i });
         if (!exist) await Station.create({ id: i, isLocked: false });
@@ -64,13 +62,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Socket Logic ---
 io.on('connection', async (socket) => {
-    // ส่งข้อมูลเริ่มต้น
     const stations = await Station.find().sort({id: 1});
     const candidates = await Candidate.find();
     const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
     
-    // ส่งประวัติการโหวตล่าสุด 50 คน ไปให้หน้าเว็บด้วย
-    const recentLogs = await VoteLog.find().sort({ timestamp: -1 }).limit(50);
+    // ส่ง Log ล่าสุดไปให้เผื่อใครเพิ่งเข้าหน้าจอ
+    const recentLogs = await VoteLog.find().sort({ timestamp: -1 }).limit(10);
 
     socket.emit('init_data', { stations, candidates, totalVotes, recentLogs });
 
@@ -84,34 +81,34 @@ io.on('connection', async (socket) => {
         io.emit('station_update', { id, isLocked: true });
     });
 
+    // รับคะแนน
     socket.on('submit_vote', async (data) => {
         let candidateId = (typeof data === 'object') ? data.candidateId : data;
         
         if (candidateId !== undefined) {
-            // 1. บวกคะแนน
             await Candidate.updateOne({ id: candidateId }, { $inc: { votes: 1 } });
             
-            // 2. บันทึก Log ว่าเป็น "คนที่เท่าไหร่"
-            const currentTotal = await VoteLog.countDocuments();
-            const voterOrder = currentTotal + 1;
+            // สร้าง Log
+            const count = await VoteLog.countDocuments();
+            const order = count + 1;
+            const cInfo = await Candidate.findOne({ id: candidateId });
             
-            const candidateInfo = await Candidate.findOne({ id: candidateId });
-            const logEntry = await VoteLog.create({
-                order: voterOrder,
+            const newLog = await VoteLog.create({
+                order: order,
                 candidateId: candidateId,
-                candidateName: candidateInfo ? candidateInfo.name : 'Unknown'
+                candidateName: cInfo ? cInfo.name : 'Unknown'
             });
 
-            console.log(`✅ Vote #${voterOrder}: Selected #${candidateId}`);
+            console.log(`✅ Vote #${order} -> Cand #${candidateId}`);
 
-            // 3. ส่งข้อมูลใหม่ไปให้ทุกหน้าจอทันที
             const allCandidates = await Candidate.find();
             const total = allCandidates.reduce((sum, c) => sum + c.votes, 0);
             
+            // ส่งข้อมูลพร้อม Log ใหม่
             io.emit('data_update', { 
                 candidates: allCandidates, 
                 totalVotes: total,
-                newLog: logEntry // ส่งข้อมูลคนล่าสุดไปด้วย
+                newLog: newLog 
             });
         }
     });
@@ -119,11 +116,10 @@ io.on('connection', async (socket) => {
     socket.on('admin_reset', async () => {
         await Candidate.updateMany({}, { votes: 0 });
         await Station.updateMany({}, { isLocked: false });
-        await VoteLog.deleteMany({}); // ลบประวัติด้วย
-        
+        await VoteLog.deleteMany({});
         const stations = await Station.find().sort({id: 1});
         const candidates = await Candidate.find();
-        io.emit('init_data', { stations, candidates, totalVotes: 0, recentLogs: [] });
+        io.emit('init_data', { stations, candidates, totalVotes: 0 });
     });
 });
 

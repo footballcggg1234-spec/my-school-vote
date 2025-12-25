@@ -1,139 +1,145 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="light">
+<html lang="th" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPK26 | Live Logs</title>
+    <title>RPK26 | Live Vote</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700;900&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; color: #0f172a; overflow-x: hidden; }
+        body { font-family: 'Prompt', sans-serif; background-color: #0f172a; color: white; overflow: hidden; }
         
-        /* THEME COLORS for Tags */
-        .tag-1 { background-color: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
-        .tag-2 { background-color: #dbeafe; color: #3b82f6; border: 1px solid #bfdbfe; }
-        .tag-3 { background-color: #d1fae5; color: #10b981; border: 1px solid #a7f3d0; }
-        .tag-0 { background-color: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+        /* POPUP ANIMATION */
+        .popup-card {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0); opacity: 0;
+        }
+        .popup-card.active {
+            transform: scale(1); opacity: 1;
+        }
+        
+        /* BACKGROUND */
+        .bg-animated {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+        
+        .waiting-pulse { animation: pulse-slow 2s infinite; }
+        @keyframes pulse-slow { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
 
-        /* ANIMATIONS */
-        .slide-down { animation: slideDown 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(-20px); }
-        @keyframes slideDown { to { opacity: 1; transform: translateY(0); } }
+        /* VOTE CARD STYLES */
+        .card-1 { background: linear-gradient(135deg, #ef4444, #b91c1c); border: 4px solid #fecaca; box-shadow: 0 0 50px rgba(239, 68, 68, 0.5); }
+        .card-2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 4px solid #bfdbfe; box-shadow: 0 0 50px rgba(59, 130, 246, 0.5); }
+        .card-3 { background: linear-gradient(135deg, #10b981, #047857); border: 4px solid #a7f3d0; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); }
+        .card-0 { background: linear-gradient(135deg, #64748b, #334155); border: 4px solid #e2e8f0; box-shadow: 0 0 50px rgba(100, 116, 139, 0.5); }
 
-        .new-row { animation: flashHighlight 2s ease-out; }
-        @keyframes flashHighlight { 0% { background-color: #fef3c7; transform: scale(1.02); } 100% { background-color: white; transform: scale(1); } }
-
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
         .hidden-section { display: none !important; }
-
-        /* GRID for Vote Cards */
-        .vote-card { transition: all 0.3s; cursor: pointer; border: 2px solid transparent; }
-        .vote-card:hover { transform: translateY(-5px); border-color: #3b82f6; }
-        .vote-card.selected { border-color: #f59e0b; background-color: #fffbeb; }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <div id="view-landing" class="min-h-screen flex flex-col items-center justify-center p-6 slide-down">
-        <h1 class="text-6xl font-black text-slate-800 mb-4">ระบบเลือกตั้ง</h1>
-        <p class="text-xl text-slate-500 mb-12">โรงเรียนประชาราชสงเคราะห์ 26</p>
+    <div id="view-landing" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
+        <h1 class="text-6xl font-black text-white mb-8 tracking-tighter">ELECTION SYSTEM</h1>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-12">
-            <button onclick="selectStation(1)" class="bg-white p-8 rounded-2xl card-shadow hover:shadow-xl transition text-center">
-                <div class="text-4xl font-bold text-slate-200 mb-2">01</div>
-                <div class="font-bold text-xl">จุดเลือกตั้งที่ 1</div>
+            <button onclick="selectStation(1)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
+                <div class="text-4xl font-bold mb-2">01</div>
+                <div>จุดเลือกตั้งที่ 1</div>
             </button>
-            <button onclick="selectStation(2)" class="bg-white p-8 rounded-2xl card-shadow hover:shadow-xl transition text-center">
-                <div class="text-4xl font-bold text-slate-200 mb-2">02</div>
-                <div class="font-bold text-xl">จุดเลือกตั้งที่ 2</div>
+            <button onclick="selectStation(2)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
+                <div class="text-4xl font-bold mb-2">02</div>
+                <div>จุดเลือกตั้งที่ 2</div>
             </button>
-            <button onclick="selectStation(3)" class="bg-white p-8 rounded-2xl card-shadow hover:shadow-xl transition text-center">
-                <div class="text-4xl font-bold text-slate-200 mb-2">03</div>
-                <div class="font-bold text-xl">จุดเลือกตั้งที่ 3</div>
+            <button onclick="selectStation(3)" class="bg-white/10 hover:bg-white/20 p-8 rounded-2xl border border-white/20 transition text-center backdrop-blur">
+                <div class="text-4xl font-bold mb-2">03</div>
+                <div>จุดเลือกตั้งที่ 3</div>
             </button>
         </div>
 
         <div class="flex gap-4">
-            <button onclick="enterMode('log')" class="px-6 py-3 rounded-full bg-slate-800 text-white font-bold hover:bg-slate-700 transition shadow-lg">
-                <i class="fa-solid fa-list-ol mr-2"></i> ดูรายการโหวตสด (Live Log)
+            <button onclick="enterMode('live')" class="px-8 py-3 rounded-full bg-blue-600 font-bold hover:bg-blue-500 shadow-lg text-lg">
+                <i class="fa-solid fa-tv mr-2"></i> จอแสดงผลสด (LIVE)
             </button>
-            <button onclick="enterMode('admin')" class="px-6 py-3 rounded-full border border-slate-300 font-bold hover:bg-white transition">
+            <button onclick="enterMode('admin')" class="px-8 py-3 rounded-full border border-white/30 font-bold hover:bg-white/10">
                 Admin
             </button>
         </div>
     </div>
 
-    <div id="view-log" class="hidden-section min-h-screen bg-slate-100 p-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex justify-between items-center mb-8 sticky top-0 bg-slate-100 py-4 z-10">
-                <div>
-                    <h1 class="text-4xl font-black text-slate-800">บันทึกการลงคะแนนสด</h1>
-                    <p class="text-slate-500">Real-time Voting Log</p>
-                </div>
-                <button onclick="location.reload()" class="bg-white px-4 py-2 rounded-lg shadow text-sm font-bold hover:text-red-500"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
+    <div id="view-live" class="hidden-section fixed inset-0 flex items-center justify-center overflow-hidden">
+        <div class="bg-animated"></div> <div id="waiting-state" class="text-center absolute transition-opacity duration-500">
+            <div class="text-9xl text-white/10 mb-4 waiting-pulse"><i class="fa-solid fa-box-open"></i></div>
+            <h1 class="text-4xl font-bold text-white/30 tracking-[0.2em] uppercase">Waiting for votes...</h1>
+            <div class="mt-8 text-white/50 text-xl">ยอดผู้ใช้สิทธิ์: <span id="live-total-count" class="font-black text-white text-3xl">0</span></div>
+        </div>
+
+        <div id="popup-card" class="popup-card relative z-50 w-full max-w-2xl mx-4 rounded-[3rem] p-10 text-center text-white card-1">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-8 py-2 rounded-full font-black text-xl shadow-lg border-4 border-slate-900 tracking-widest">
+                VOTE #<span id="popup-order">000</span>
+            </div>
+            
+            <div class="mt-4 mb-2 opacity-80 text-lg uppercase tracking-widest font-bold">Selected Candidate</div>
+            
+            <div class="w-48 h-48 mx-auto mb-6 rounded-full border-4 border-white/50 shadow-2xl overflow-hidden bg-white">
+                <img id="popup-img" src="" class="w-full h-full object-cover">
             </div>
 
-            <div class="bg-slate-800 text-white p-4 rounded-t-2xl flex justify-between font-bold text-lg shadow-lg">
-                <div class="w-24 text-center">ลำดับที่</div>
-                <div class="flex-1 pl-8">สิ่งที่เลือก</div>
-                <div class="w-32 text-right">เวลา</div>
-            </div>
-
-            <div id="log-container" class="space-y-2 pb-20">
-                <div class="text-center p-10 text-slate-400">รอการลงคะแนนแรก...</div>
-            </div>
+            <h1 id="popup-number" class="text-8xl font-black mb-2 drop-shadow-md">01</h1>
+            <h2 id="popup-name" class="text-4xl font-bold drop-shadow-sm">ชื่อพรรค...</h2>
         </div>
     </div>
 
     <div id="view-voting" class="hidden-section min-h-screen flex flex-col p-6 pb-32">
         <header class="flex justify-between items-center mb-8">
-            <div class="bg-white px-4 py-2 rounded-full shadow font-bold text-sm">Station <span id="station-badge">?</span></div>
-            <div class="font-bold text-slate-300">RPK26</div>
+            <div class="bg-white/10 px-4 py-2 rounded-full backdrop-blur">Station <span id="station-badge">?</span></div>
+            <div class="font-bold opacity-50">RPK26</div>
         </header>
-        <div class="text-center mb-8">
+        <div class="text-center mb-10">
             <h1 class="text-4xl font-bold">เลือกตั้งสภานักเรียน</h1>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto w-full">
-            <div onclick="selectParty(1)" class="vote-card bg-white p-4 rounded-xl shadow text-center group">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/1.jpg" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x600?text=No+Image'"></div>
-                <h3 class="text-xl font-bold">เบอร์ 1</h3><p class="text-slate-500">พรรคภิญโญราช</p>
+            <div onclick="selectParty(1)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-red-500 shadow-lg">
+                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/1.jpg" class="w-full h-full object-cover"></div>
+                <h3 class="text-2xl font-bold">เบอร์ 1</h3><p>พรรคภิญโญราช</p>
             </div>
-            <div onclick="selectParty(2)" class="vote-card bg-white p-4 rounded-xl shadow text-center group">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/2.jpg" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x600?text=No+Image'"></div>
-                <h3 class="text-xl font-bold">เบอร์ 2</h3><p class="text-slate-500">พรรคราชรุ่งโรจน์</p>
+            <div onclick="selectParty(2)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-blue-500 shadow-lg">
+                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/2.jpg" class="w-full h-full object-cover"></div>
+                <h3 class="text-2xl font-bold">เบอร์ 2</h3><p>พรรคราชรุ่งโรจน์</p>
             </div>
-            <div onclick="selectParty(3)" class="vote-card bg-white p-4 rounded-xl shadow text-center group">
-                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/3.jpg" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x600?text=No+Image'"></div>
-                <h3 class="text-xl font-bold">เบอร์ 3</h3><p class="text-slate-500">พรรคราชภิวัฒน์</p>
+            <div onclick="selectParty(3)" class="bg-white p-4 rounded-xl text-slate-900 cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-green-500 shadow-lg">
+                <div class="h-64 bg-slate-200 rounded-lg mb-4 overflow-hidden"><img src="images/3.jpg" class="w-full h-full object-cover"></div>
+                <h3 class="text-2xl font-bold">เบอร์ 3</h3><p>พรรคราชภิวัฒน์</p>
             </div>
-            <div onclick="selectParty(0)" class="vote-card bg-white p-4 rounded-xl shadow text-center group flex flex-col justify-center">
-                <div class="h-32 flex items-center justify-center text-slate-300 text-6xl mb-4"><i class="fa-solid fa-ban"></i></div>
-                <h3 class="text-xl font-bold text-slate-500">ไม่ประสงค์ลงคะแนน</h3>
+            <div onclick="selectParty(0)" class="bg-slate-700 p-4 rounded-xl text-white cursor-pointer hover:scale-105 transition duration-300 border-b-8 border-slate-500 shadow-lg flex flex-col justify-center text-center">
+                <div class="h-32 flex items-center justify-center text-5xl mb-4"><i class="fa-solid fa-ban"></i></div>
+                <h3 class="text-2xl font-bold">ไม่ประสงค์ลงคะแนน</h3>
             </div>
         </div>
-        <div id="submit-bar" class="fixed bottom-0 left-0 w-full p-6 flex justify-center translate-y-full transition-transform duration-300">
-            <div class="bg-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-slate-200">
-                <div class="font-bold">เลือก: <span id="selected-text" class="text-amber-500 text-xl ml-2">-</span></div>
-                <button onclick="confirmVote()" class="bg-amber-500 text-white px-8 py-2 rounded-full font-bold hover:bg-amber-600 transition">ยืนยัน</button>
+        
+        <div id="submit-bar" class="fixed bottom-0 left-0 w-full p-6 flex justify-center translate-y-full transition-transform duration-300 z-50">
+            <div class="bg-white text-slate-900 px-8 py-4 rounded-full shadow-2xl flex items-center gap-6">
+                <div class="font-bold text-xl">เลือก: <span id="selected-text" class="text-blue-600 font-black">-</span></div>
+                <button onclick="confirmVote()" class="bg-black text-white px-8 py-2 rounded-full font-bold hover:bg-gray-800">ยืนยัน</button>
             </div>
         </div>
     </div>
 
-    <div id="view-success" class="hidden-section fixed inset-0 bg-white/95 z-50 flex flex-col items-center justify-center">
-        <i class="fa-solid fa-check-circle text-8xl text-green-500 mb-4"></i>
-        <h1 class="text-4xl font-bold">เรียบร้อย!</h1>
+    <div id="view-success" class="hidden-section fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-center">
+        <i class="fa-solid fa-check-circle text-8xl text-green-500 mb-6 animate-bounce"></i>
+        <h1 class="text-5xl font-bold mb-2">เรียบร้อย!</h1>
+        <p class="text-xl opacity-60">ขอบคุณที่ใช้สิทธิ์</p>
     </div>
 
-    <div id="view-admin" class="hidden-section min-h-screen p-8 bg-slate-100">
+    <div id="view-admin" class="hidden-section min-h-screen p-8 bg-slate-100 text-slate-900">
         <div class="max-w-4xl mx-auto">
             <div class="flex justify-between items-center mb-8"><h1 class="text-2xl font-bold">Admin Console</h1><button onclick="location.reload()" class="text-red-500 font-bold">Exit</button></div>
             <div class="grid grid-cols-3 gap-4 mb-8" id="admin-station-list"></div>
             <div class="bg-white p-6 rounded-xl shadow">
-                <h3 class="font-bold mb-4">Live Score</h3>
                 <div id="admin-results-list" class="space-y-4"></div>
-                <button onclick="if(confirm('Reset?')) socket.emit('admin_reset')" class="mt-8 text-red-500 text-sm underline">Reset All Data</button>
+                <button onclick="if(confirm('Reset?')) socket.emit('admin_reset')" class="mt-8 text-red-500 text-sm underline w-full text-center">Reset System</button>
             </div>
         </div>
     </div>
@@ -142,6 +148,10 @@
         const socket = io();
         let myStationId = null;
         let selectedParty = null;
+        
+        // --- QUEUE SYSTEM FOR POPUP ---
+        let voteQueue = [];
+        let isShowingPopup = false;
 
         // Navigation
         function selectStation(id) {
@@ -154,79 +164,92 @@
         function enterMode(mode) {
             document.getElementById('view-landing').classList.add('hidden-section');
             document.getElementById(`view-${mode}`).classList.remove('hidden-section');
-            if(mode === 'admin' || mode === 'log') socket.emit('request_status');
+            if(mode === 'admin') socket.emit('request_status');
         }
 
         // Socket Events
         socket.on('init_data', (data) => {
             updateAdminUI(data.stations);
-            updateScores(data.candidates);
-            // Render Logs from history
-            const logContainer = document.getElementById('log-container');
-            if(data.recentLogs && data.recentLogs.length > 0) {
-                logContainer.innerHTML = ''; // Clear "No Data"
-                data.recentLogs.forEach(log => prependLog(log, false));
-            }
+            updateScores(data.candidates, data.totalVotes);
         });
 
         socket.on('data_update', (data) => {
-            updateScores(data.candidates);
+            updateScores(data.candidates, data.totalVotes);
+            // เมื่อมี Log ใหม่ ให้ยัดเข้าคิว
             if(data.newLog) {
-                prependLog(data.newLog, true); // True = Animate
+                voteQueue.push(data.newLog);
+                processQueue(); // สั่งให้เริ่มแสดงผล
             }
         });
 
         socket.on('reset_all', () => { location.reload(); });
 
-        // --- CORE LOGIC: LOG TABLE ---
-        function prependLog(log, animate) {
-            const container = document.getElementById('log-container');
+        // --- POPUP LOGIC (หัวใจสำคัญ) ---
+        function processQueue() {
+            // ถ้ากำลังโชว์อยู่ หรือ คิวว่าง ให้หยุดก่อน
+            if (isShowingPopup || voteQueue.length === 0) return;
+
+            isShowingPopup = true; // ล็อกสถานะ
+            const log = voteQueue.shift(); // ดึงคนแรกออกจากคิว
+
+            showPopup(log);
+        }
+
+        function showPopup(log) {
+            const popup = document.getElementById('popup-card');
+            const waiting = document.getElementById('waiting-state');
             
-            // Clear "No Data" message if it exists
-            if(container.children[0] && container.children[0].innerText.includes('รอการลงคะแนน')) container.innerHTML = '';
-
-            const div = document.createElement('div');
-            div.className = `bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border-l-4 ${getBorderColor(log.candidateId)} ${animate ? 'new-row' : ''}`;
+            // 1. อัปเดตข้อมูลในการ์ด
+            document.getElementById('popup-order').innerText = String(log.order).padStart(3, '0');
+            document.getElementById('popup-name').innerText = log.candidateName;
             
-            const time = new Date(log.timestamp).toLocaleTimeString('th-TH');
-            const tagName = `tag-${log.candidateId}`; // class for color
+            // ตั้งค่าสีและรูปตามเบอร์
+            let imgPath = '';
+            popup.className = 'popup-card relative z-50 w-full max-w-2xl mx-4 rounded-[3rem] p-10 text-center text-white '; // Reset class
+            
+            if(log.candidateId === 1) { 
+                popup.classList.add('card-1'); 
+                document.getElementById('popup-number').innerText = '01';
+                imgPath = 'images/1.jpg';
+            } else if(log.candidateId === 2) { 
+                popup.classList.add('card-2');
+                document.getElementById('popup-number').innerText = '02';
+                imgPath = 'images/2.jpg';
+            } else if(log.candidateId === 3) { 
+                popup.classList.add('card-3');
+                document.getElementById('popup-number').innerText = '03';
+                imgPath = 'images/3.jpg';
+            } else { 
+                popup.classList.add('card-0');
+                document.getElementById('popup-number').innerText = 'งดออกเสียง';
+                imgPath = 'https://placehold.co/400x400?text=X'; // รูปกากบาท
+            }
+            
+            document.getElementById('popup-img').src = imgPath;
 
-            div.innerHTML = `
-                <div class="w-24 text-center font-black text-2xl text-slate-300">#${log.order}</div>
-                <div class="flex-1 pl-8">
-                    <span class="text-sm text-slate-400">ลงคะแนนให้</span><br>
-                    <span class="font-bold text-xl ${getTextColor(log.candidateId)}">${log.candidateName}</span>
-                </div>
-                <div class="w-32 text-right text-slate-400 font-mono text-sm">${time}</div>
-            `;
+            // 2. ซ่อน Waiting, โชว์ Popup
+            waiting.style.opacity = '0';
+            setTimeout(() => {
+                popup.classList.add('active'); // เด้งขึ้นมา
+                
+                // 3. รอ 4 วินาที แล้วซ่อน
+                setTimeout(() => {
+                    popup.classList.remove('active'); // หุบลงไป
+                    
+                    setTimeout(() => {
+                        waiting.style.opacity = '1'; // Waiting กลับมา
+                        isShowingPopup = false; // ปลดล็อก
+                        processQueue(); // เช็กว่ามีคนต่อคิวไหม ถ้ามีก็โชว์ต่อเลย
+                    }, 500); // รอ animation จบ
+                    
+                }, 4000); // โชว์ค้างไว้ 4 วิ
 
-            container.insertBefore(div, container.firstChild);
+            }, 200);
         }
 
-        // Helper Colors
-        function getBorderColor(id) {
-            if(id===1) return 'border-red-500';
-            if(id===2) return 'border-blue-500';
-            if(id===3) return 'border-green-500';
-            return 'border-slate-400';
-        }
-        function getTextColor(id) {
-            if(id===1) return 'text-red-600';
-            if(id===2) return 'text-blue-600';
-            if(id===3) return 'text-green-600';
-            return 'text-slate-600';
-        }
-
-        // Voting Logic (Standard)
+        // --- Other Logic ---
         function selectParty(id) {
             selectedParty = id;
-            document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
-            // Logic to highlight specific card omitted for brevity, adding simple border
-            const cards = document.querySelectorAll('.vote-card');
-            // Simplified selection logic
-            if(id===0) cards[3].classList.add('selected');
-            else cards[id-1].classList.add('selected');
-            
             document.getElementById('submit-bar').classList.remove('translate-y-full');
             document.getElementById('selected-text').innerText = (id===0) ? "ไม่ประสงค์ลงคะแนน" : `เบอร์ ${id}`;
         }
@@ -235,30 +258,23 @@
             if (selectedParty === null) return;
             socket.emit('submit_vote', { candidateId: selectedParty });
             document.getElementById('view-success').classList.remove('hidden-section');
-            setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); location.reload(); }, 2000); // Reload to reset state cleanly
+            setTimeout(() => { document.getElementById('view-success').classList.add('hidden-section'); location.reload(); }, 2000);
         }
 
-        // Admin Logic
         function updateAdminUI(stations) {
             const list = document.getElementById('admin-station-list');
             if(!list) return;
-            list.innerHTML = stations.map(s => `
-                <div onclick="socket.emit('${s.isLocked?'admin_unlock_station':'admin_lock_station'}', ${s.id})" 
-                    class="bg-white p-4 rounded shadow text-center cursor-pointer ${s.isLocked ? 'border-red-500 border' : 'border-green-500 border'}">
-                    Station ${s.id}: ${s.isLocked ? 'LOCKED' : 'READY'}
-                </div>
-            `).join('');
+            list.innerHTML = stations.map(s => `<div class="bg-white p-4 rounded text-center border">Station ${s.id}: ${s.isLocked?'LOCKED':'READY'}</div>`).join('');
         }
-        function updateScores(cands) {
-            const list = document.getElementById('admin-results-list');
-            if(!list) return;
-            const sorted = [...cands].sort((a,b) => b.votes - a.votes);
-            list.innerHTML = sorted.map(c => `
-                <div class="flex justify-between items-center border-b pb-2">
-                    <span>${c.name}</span>
-                    <span class="font-bold text-xl">${c.votes}</span>
-                </div>
-            `).join('');
+        function updateScores(cands, total) {
+            const liveCount = document.getElementById('live-total-count');
+            if(liveCount) liveCount.innerText = total; // อัปเดตยอดรวมในหน้า Live
+
+            const adminList = document.getElementById('admin-results-list');
+            if(adminList) { 
+                const sorted = [...cands].sort((a,b) => b.votes - a.votes); 
+                adminList.innerHTML = sorted.map(c => `<div class="flex justify-between p-2 border-b"><span>${c.name}</span><span class="font-bold">${c.votes}</span></div>`).join(''); 
+            }
         }
     </script>
 </body>
